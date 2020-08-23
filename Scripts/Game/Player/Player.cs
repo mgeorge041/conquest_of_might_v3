@@ -107,12 +107,6 @@ public class Player
         fogMap = new FogMap();
     }
 
-    // Set tilemaps for maps
-    public void SetMaps(Tilemap movementTilemap, Tilemap fogOfWarTilemap) {
-        actionMap.SetTilemap(movementTilemap);
-        fogMap.SetTilemap(fogOfWarTilemap);
-    }
-
     // Initialize game setup
     public void StartFirstTurn() {
         DrawStartingHand();

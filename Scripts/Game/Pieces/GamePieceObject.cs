@@ -45,9 +45,9 @@ public class GamePieceObject : MonoBehaviour
     }
 
     // Set piece object position
-    public void SetPosition(GameMap gameMap) {
+    public void SetPosition(GameMapObject gameMapObject) {
         Vector3Int tileCoords = Map.ConvertHexToTileCoords(piece.GetGameHex().GetHexCoords());
-        Vector3 tilePosition = gameMap.tileGrid.CellToWorld(tileCoords);
+        Vector3 tilePosition = gameMapObject.tileGrid.CellToWorld(tileCoords);
         transform.position = new Vector3(tilePosition.x, tilePosition.y, -1);
     }
 

@@ -7,12 +7,7 @@ using UnityEngine.UI;
 public class EditorManager : MonoBehaviour
 {
     // Tilemap
-    private EditorMap editorMap;
-    public Tilemap editorTilemap;
-    public SelectedTileInfo selectedTileInfo;
-
-    // Camera
-    public Camera mainCamera;
+    public EditorMapObject editorMapObject;
 
     // Paint mode buttons
     public Toggle paintToggle;
@@ -20,36 +15,11 @@ public class EditorManager : MonoBehaviour
 
     // Map Size label
     public Text labelText;
-    public Slider mapSizeSlider;
 
     // Set text
-    public void SetMapSizeText(float mapSize) {
-        //int mapRadius = (int)(mapSize - 1) / 2;
-        labelText.text = "Map Size: " + mapSize;
-        editorMap.SetNewMapRadius((int)mapSize);
-    }
-
-    // Set current paint mode
-    public void SetPaintMode(string tileMode) {
-        if (tileMode == "P") {
-            editorMap.SetPaintMode(EditorMap.PaintMode.paint);
-        }
-        else {
-            editorMap.SetPaintMode(EditorMap.PaintMode.erase);
-        }
-    }
-
-    // Draw editor map
-    public void DrawMap() {
-        editorMap.DrawNewMap();
-    }
-
-    // Start is called before the first frame update
-    private void Start() {
-        Tile defaultTile = Resources.Load<Tile>("Tiles/Tiles/Default");
-        editorMap = new EditorMap(defaultTile, editorTilemap);
-        selectedTileInfo.SetEditorMap(editorMap);
-        mapSizeSlider.value = GameSetupData.mapRadius;
+    public void SetMapSizeText(float mapRadius) {
+        labelText.text = "Map Size: " + mapRadius;
+        editorMapObject.editorMap.SetNewMapRadius((int)mapRadius);
     }
 
     // Update is called once per frame
@@ -57,15 +27,16 @@ public class EditorManager : MonoBehaviour
         // Paint mode buttons
         if (Input.GetKeyDown(KeyCode.E)) {
             eraseToggle.isOn = true;
-            editorMap.SetPaintMode(EditorMap.PaintMode.erase);
+            editorMapObject.SetPaintMode(EditorMapObject.PaintMode.erase);
         }
         else if (Input.GetKeyDown(KeyCode.F)) {
             paintToggle.isOn = true;
-            editorMap.SetPaintMode(EditorMap.PaintMode.paint);
+            editorMapObject.SetPaintMode(EditorMapObject.PaintMode.paint);
         }
 
+        // Rotation of tile
         if (Input.GetKeyDown(KeyCode.R)) {
-            editorMap.AdjustTileRotation180();
+            editorMapObject.AdjustTileRotation180();
         }
     }
 }

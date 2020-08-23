@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -9,6 +10,12 @@ public class PlayerObject : MonoBehaviour
 {
     private Player player;
     public GameMap gameMap;
+
+    // Map objects
+    public GameMapObject gameMapObject;
+    public ActionMapObject actionMapObject;
+    public FogMapObject fogMapObject;
+
     public Tilemap movementTilemap;
     public Tilemap fogOfWarTilemap;
     public Transform cardRegion;
@@ -28,7 +35,9 @@ public class PlayerObject : MonoBehaviour
     // Set player
     public void SetPlayer(Player player) {
         this.player = player;
-        this.player.SetMaps(movementTilemap, fogOfWarTilemap);
+        fogMapObject.SetFogMap(player.fogMap);
+        fogMapObject.PaintInitialFogMap();
+        actionMapObject.SetActionMap(player.actionMap);
     }
 
     // Get player
@@ -39,6 +48,11 @@ public class PlayerObject : MonoBehaviour
     // Set game map
     public void SetGameMap(GameMap gameMap) {
         this.gameMap = gameMap;
+    }
+
+    // Set game map object
+    public void SetGameMapObject(GameMapObject gameMapObject) {
+        this.gameMapObject = gameMapObject;
     }
 
     // Set game manager object
@@ -55,14 +69,14 @@ public class PlayerObject : MonoBehaviour
     public void StartFirstTurn() {
         InstantiateStartingPieces();
         player.StartFirstTurn();
-        player.fogMap.PaintFogMap();
+        fogMapObject.PaintFogMap();
         resourceCounter.UpdateStartingResources(player.GetResources());
         InstantiateStartingCards();
 
         // Set camera centered over start
-        playerCamera.SetTilemap(gameMap.tilemap);
+        playerCamera.SetTilemap(gameMapObject.tilemap);
         playerCamera.SetCameraBounds();
-        playerCamera.MoveCameraToPosition(gameMap.GetWorldCoordsFromTileCoords(player.GetStartTileCoords()));
+        playerCamera.MoveCameraToPosition(gameMapObject.GetWorldCoordsFromTileCoords(player.GetStartTileCoords()));
     }
 
     // Start turn
@@ -129,22 +143,22 @@ public class PlayerObject : MonoBehaviour
     public void InstantiateStartingPieces() {
         List<GamePiece> pieces = player.GetPieces();
         for (int i = 0; i < pieces.Count; i++) {
-            GamePieceObject newPieceObject = GamePieceObject.InitializeFromGamePiece(pieces[i], gameMap.tilemap.transform, player.playerId);
-            newPieceObject.SetPosition(gameMap);
+            GamePieceObject newPieceObject = GamePieceObject.InitializeFromGamePiece(pieces[i], gameMapObject.tilemap.transform, player.playerId);
+            newPieceObject.SetPosition(gameMapObject);
             gamePieceObjects[pieces[i]] = newPieceObject;
         }
-        player.fogMap.PaintFogMap();
+        fogMapObject.PaintFogMap();
     }
 
     // Create piece
     public GamePieceObject CreatePiece(CardPiece cardPiece) {
-        GamePieceObject newPieceObject = GamePieceObject.InitializeFromCardPiece(cardPiece, gameMap.tilemap.transform, player);
+        GamePieceObject newPieceObject = GamePieceObject.InitializeFromCardPiece(cardPiece, gameMapObject.tilemap.transform, player);
         return newPieceObject;
     }
 
     // Create piece object
     public GamePieceObject CreatePieceObject(GamePiece piece) {
-        GamePieceObject newPieceObject = GamePieceObject.InitializeFromGamePiece(piece, gameMap.tilemap.transform, player.playerId);
+        GamePieceObject newPieceObject = GamePieceObject.InitializeFromGamePiece(piece, gameMapObject.tilemap.transform, player.playerId);
         return newPieceObject;
     }
 
@@ -152,7 +166,7 @@ public class PlayerObject : MonoBehaviour
     public void CreateAndPositionPieceObject(GamePiece newPiece) {
         GamePieceObject newPieceObject = CreatePieceObject(newPiece);
         gamePieceObjects[newPiece] = newPieceObject;
-        newPieceObject.SetPosition(gameMap);
+        newPieceObject.SetPosition(gameMapObject);
         resourceCounter.UpdateAllResources(player.GetResources());
     }
 
@@ -196,9 +210,9 @@ public class PlayerObject : MonoBehaviour
     }
 
     // Update maps
-    private void PaintPlayerMaps  () {
-        player.actionMap.PaintActionMap();
-        player.fogMap.PaintFogMap();
+    private void PaintPlayerMaps() {
+        fogMapObject.DrawFogMap(player.GetPieces());
+        actionMapObject.DrawActionMap(player.GetSelectedPiece(), gameMap, player.fogMap);
     }
 
     // Move piece
@@ -206,10 +220,10 @@ public class PlayerObject : MonoBehaviour
         
         // Move piece
         gameMap.MovePiece(player.GetSelectedUnit(), targetTileCoords);
-        gamePieceObjects[player.GetSelectedPiece()].SetPosition(gameMap);
+        gamePieceObjects[player.GetSelectedPiece()].SetPosition(gameMapObject);
         
         // Update maps
-        player.UpdateMaps(gameMap);
+        //player.UpdateMaps(gameMap);
         PaintPlayerMaps();
     }
 
@@ -232,8 +246,8 @@ public class PlayerObject : MonoBehaviour
         resourceCounter.UpdateAllResources(player.GetResources());
 
         // Update maps
-        player.actionMap.ClearPaintedTiles();
-        player.fogMap.PaintFogMap();
+        actionMapObject.ClearPaintedTiles();
+        fogMapObject.PaintFogMap();
 
         // Update cards in hand
         handObject.ShowPlayableCards();
@@ -252,7 +266,7 @@ public class PlayerObject : MonoBehaviour
         else {
             player.SetSelectedCard(null);
         }
-        player.actionMap.PaintActionMap();
+        actionMapObject.PaintActionMap();
     }
 
     // Show current player's turn
@@ -275,7 +289,7 @@ public class PlayerObject : MonoBehaviour
 
         // Get map tile when click on map
         if (Input.GetMouseButtonDown(0) && !EventSystem.current.IsPointerOverGameObject()) {
-            Vector3Int tileCoords = gameMap.GetMouseTileCoords(playerCamera.camera, Input.mousePosition);
+            Vector3Int tileCoords = gameMapObject.GetMouseTileCoords(playerCamera.camera, Input.mousePosition);
             player.SetSelectedCard(null);
             Debug.Log("got tile coords: " + tileCoords);
             
@@ -296,12 +310,12 @@ public class PlayerObject : MonoBehaviour
                         if (piece == player.GetSelectedPiece()) {
                             Debug.Log("piece is selected piece, clearing");
                             player.ClearSelectedPiece();
-                            player.actionMap.PaintActionMap();
+                            actionMapObject.PaintActionMap();
                         }
                         else if (piece.HasActions()) {
                             Debug.Log("piece can move, creating map");
                             player.SetSelectedPiece(piece);
-                            player.actionMap.PaintActionMap();
+                            actionMapObject.PaintActionMap();
                         }
                     }
 
@@ -316,7 +330,7 @@ public class PlayerObject : MonoBehaviour
 
         // Get map tile when right click on map
         if (Input.GetMouseButtonDown(1) && !EventSystem.current.IsPointerOverGameObject()) {
-            Vector3Int tileCoords = gameMap.GetMouseTileCoords(playerCamera.camera, Input.mousePosition);
+            Vector3Int tileCoords = gameMapObject.GetMouseTileCoords(playerCamera.camera, Input.mousePosition);
             Debug.Log("got tile coords: " + tileCoords);
 
             // Click on map tile

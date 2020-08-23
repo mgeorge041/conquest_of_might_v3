@@ -7,6 +7,7 @@ using UnityEngine.Tilemaps;
 public class GameManagerObject : MonoBehaviour
 {
     private GameMap gameMap;
+    public GameMapObject gameMapObject;
     private GameManager gameManager;
     public Tilemap gameTilemap;
     private List<PlayerObject> playerObjects = new List<PlayerObject>();
@@ -41,7 +42,9 @@ public class GameManagerObject : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        gameMap = new GameMap(GameSetupData.mapRadius, gameTilemap);
+        gameMap = new GameMap(GameSetupData.mapRadius);
+        gameMapObject.SetGameMap(gameMap);
+        gameMapObject.DrawMap();
         gameManager = new GameManager(numPlayers, gameMap);
 
         // Create new player objects
@@ -50,6 +53,7 @@ public class GameManagerObject : MonoBehaviour
             // Create player object
             PlayerObject newPlayerObject = Instantiate(Resources.Load<PlayerObject>("Prefabs/Player Object"));
             newPlayerObject.SetGameMap(gameMap);
+            newPlayerObject.SetGameMapObject(gameMapObject);
             newPlayerObject.SetGameManagerObject(this);
             newPlayerObject.SetPlayer(gameManager.GetPlayer(i));
             

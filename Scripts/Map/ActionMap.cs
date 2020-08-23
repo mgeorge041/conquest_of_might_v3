@@ -9,7 +9,7 @@ public class ActionMap : Map
     public Tile movementTile;
     public Tile attackTile;
     public Tile playableTile;
-    Dictionary<Vector3Int, Tile> paintedTiles = new Dictionary<Vector3Int, Tile>();
+    private Dictionary<Vector3Int, Tile> paintedTiles = new Dictionary<Vector3Int, Tile>();
 
     // Constructor
     public ActionMap() {
@@ -25,17 +25,13 @@ public class ActionMap : Map
         SetMovementMapTiles();
     }
 
-    // Constructor
-    public ActionMap(Tilemap tilemap) {
-        this.tilemap = tilemap;
-        tileGrid = tilemap.layoutGrid;
-        SetMovementMapTiles();
-        CreateMap();
+    // Get painted tiles
+    public Dictionary<Vector3Int, Tile> GetPaintedTiles() {
+        return paintedTiles;
     }
 
     // Set tiles
     private void SetMovementMapTiles() {
-        defaultTile = Resources.Load<Tile>("Tiles/Tiles/Attack Tile");
         movementTile = Resources.Load<Tile>("Tiles/Tiles/Movement Tile");
         attackTile = Resources.Load<Tile>("Tiles/Tiles/Attack Tile");
         playableTile = Resources.Load<Tile>("Tiles/Tiles/Playable Tile");
@@ -73,31 +69,11 @@ public class ActionMap : Map
         return false;
     }
 
-    // Get number of action map tiles
-    public int GetNumberMovementMapTiles() {
-        return paintedTiles.Count;
-    }
-
-    // Clears out painted tiles
-    public void ClearPaintedTiles() {
-        foreach (Vector3Int tileCoords in paintedTiles.Keys) {
-            tilemap.SetTile(tileCoords, null);
-        }
-        tilemap.RefreshAllTiles();
-    }
-
     // Clears out playable tiles
     public void ClearActionTiles() {
         foreach (Vector3Int tileCoords in paintedTiles.Keys.ToList()) {
             paintedTiles[tileCoords] = null;
         }
-    }
-
-    // Draw action map
-    public void DrawActionMap(GamePiece piece, GameMap gameMap, FogMap fogOfWarMap) {
-        ClearPaintedTiles();
-        CreateActionMap(piece, gameMap, fogOfWarMap);
-        PaintActionMap();
     }
 
     // Create action map
@@ -107,7 +83,7 @@ public class ActionMap : Map
             return;
         }
         Vector3Int hexCoords = piece.GetGameHex().GetHexCoords();
-        List<Vector3Int> visibleTileCoords = fogOfWarMap.GetVisibleTileCoordsList();
+        List<Vector3Int> visibleTileCoords = fogOfWarMap.GetVisibleTileCoords();
 
         if (piece.pieceType == PieceType.Unit) {
             Unit unit = (Unit)piece;
@@ -134,21 +110,6 @@ public class ActionMap : Map
                 }
             }
         }
-    }
-
-    // Paints movement map
-    public void PaintActionMap() {
-        foreach (KeyValuePair<Vector3Int, Tile> pair in paintedTiles) {
-            tilemap.SetTile(pair.Key, pair.Value);
-        }
-        tilemap.RefreshAllTiles();
-    }
-
-    // Draw playable map
-    public void DrawPlayableMap(Vector3Int startTileCoords, GameMap gameMap) {
-        ClearPaintedTiles();
-        CreatePlayableMap(startTileCoords, gameMap);
-        PaintActionMap();
     }
 
     // Create playable map

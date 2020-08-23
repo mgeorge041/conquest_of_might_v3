@@ -94,8 +94,8 @@ namespace Tests
         public void MapUpdatesSize() {
             Map map = CreateMap();
             map.UpdateMapToRadius(7);
-            Assert.AreEqual(map.GetMapRadius(), 7);
-            Assert.AreEqual(map.GetHexCoordsDict().Count, 217);
+            Assert.AreEqual(7, map.GetMapRadius());
+            Assert.AreEqual(169, map.GetHexCoordsDict().Count);
         }
 
         // Test get hexes within range

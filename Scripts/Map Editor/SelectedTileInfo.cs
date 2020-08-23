@@ -9,14 +9,9 @@ public class SelectedTileInfo : MonoBehaviour
     public Text selectedTileName;
     private Tile currentTile;
     public Image currentTileImage;
-    public EditorMap editorMap;
+    public EditorMapObject editorMapObject;
     private int currentTileRotation = 0;
     public Text moveCostLabel;
-
-    // Set editor map
-    public void SetEditorMap(EditorMap editorMap) {
-        this.editorMap = editorMap;
-    }
 
     // Update new selected tile
     public void UpdateSelectedTile(EditorTile newTile)
@@ -25,7 +20,7 @@ public class SelectedTileInfo : MonoBehaviour
         currentTile = newPaintTile;
         selectedTileName.text = currentTile.name;
         currentTileImage.sprite = currentTile.sprite;
-        editorMap.SetSelectedEditorTile(currentTile);
+        editorMapObject.SetSelectedEditorTile(currentTile);
         moveCostLabel.text = newTile.GetTileMoveCost().ToString();
     }
 

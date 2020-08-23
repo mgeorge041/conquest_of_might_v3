@@ -123,9 +123,10 @@ public class MapCamera : MonoBehaviour
         }
         else {
             // This is for UI that covers part of the screen
-            //maxXPos = Math.Max(tilemapHalfWidth - halfCameraWidth + uiRatio * cameraWidth, 0);
-            maxXPos = Math.Max(tilemapHalfWidth - halfCameraWidth, 0);
-            minXPos = Math.Min(-(tilemapHalfWidth - halfCameraWidth), 0);
+            maxXPos = Math.Max(tilemapHalfWidth - halfCameraWidth + uiRatio * cameraWidth, 0);
+            minXPos = -(tilemapHalfWidth - halfCameraWidth);
+            //maxXPos = Math.Max(tilemapHalfWidth - halfCameraWidth, 0);
+            //minXPos = Math.Min(-(tilemapHalfWidth - halfCameraWidth), 0);
             if (minXPos > maxXPos) {
                 minXPos = maxXPos;
             }

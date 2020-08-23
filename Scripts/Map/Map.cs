@@ -11,56 +11,21 @@ public class Map
     protected int mapRadius = GameSetupData.mapRadius;
 
     // Tilemap variables
-    public Tile defaultTile;
-    public Tilemap tilemap;
-    public Grid tileGrid;
-    protected bool isOverTilemap = false;
     private Dictionary<Vector3Int, Hex> hexCoordsDict = new Dictionary<Vector3Int, Hex>();
     protected Dictionary<Vector3Int, Vector3Int> tileHexCoordsDict = new Dictionary<Vector3Int, Vector3Int>();
+    protected List<Vector3Int> removedTiles = new List<Vector3Int>();
 
     // Constructor
     public Map() { }
-
-    // Constructor
-    public Map(Tilemap tilemap) {
-        this.tilemap = tilemap;
-        tileGrid = tilemap.layoutGrid;
-        defaultTile = Resources.Load<Tile>("Tiles/Default");
-        DrawNewMap();
-    }
-
-    // Constructor
-    public Map(Tile defaultTile, Tilemap tilemap) {
-        this.defaultTile = defaultTile;
-        this.tilemap = tilemap;
-        tileGrid = tilemap.layoutGrid;
-        DrawNewMap();
-    }
 
     // Get map radius 
     public int GetMapRadius() {
         return mapRadius;
     }
 
-    // Set default tile
-    public void SetDefaultTile(Tile defaultTile) {
-        this.defaultTile = defaultTile;
-    }
-
-    // Set tilemap
-    public void SetTilemap(Tilemap tilemap) {
-        this.tilemap = tilemap;
-        tileGrid = tilemap.layoutGrid;
-    }
-
     // Set new map
     public void SetNewMapRadius(int mapRadius) {
         newMapRadius = mapRadius;
-    }
-
-    // Set new map radius
-    public void SetMapRadius(int mapRadius) {
-        this.mapRadius = mapRadius;
     }
 
     // Get hex coords dict
@@ -74,6 +39,16 @@ public class Map
             return true;
         }
         return false;
+    }
+
+    // Get tile hex coords dict
+    public Dictionary<Vector3Int, Vector3Int> GetTileHexCoordsDict() {
+        return tileHexCoordsDict;
+    }
+
+    // Get removed tiles
+    public List<Vector3Int> GetRemovedTiles() {
+        return removedTiles;
     }
 
     // Get hex from hex coords
@@ -95,30 +70,6 @@ public class Map
     // Get hex coords from tile coords
     public Vector3Int GetHexCoordsFromTileCoords(Vector3Int tileCoords) {
         return tileHexCoordsDict[tileCoords];
-    }
-
-    // Get world coordinates from tilemap coordinates
-    public Vector3 GetWorldCoordsFromTileCoords(Vector3Int tileCoords) {
-        return tileGrid.CellToWorld(tileCoords);
-    }
-
-    // Get tilemap coordinates from mouse position
-    public Vector3Int GetMouseTileCoords(Camera playerCamera, Vector3 mousePosition) {
-        return tileGrid.WorldToCell(playerCamera.ScreenToWorldPoint(mousePosition));
-    }
-
-    // Get hex coordinates from mouse position
-    public Vector3Int GetMouseHexCoords(Camera playerCamera, Vector3 mousePosition) {
-        Vector3Int tileCoords = GetMouseTileCoords(playerCamera, mousePosition);
-        return GetHexCoordsFromTileCoords(tileCoords);
-    }
-
-    // Get whether mouse is over tile
-    public bool MouseOverTile(Camera playerCamera, Vector3 mousePosition) {
-        if (tileHexCoordsDict.ContainsKey(GetMouseTileCoords(playerCamera, mousePosition))) {
-            return true;
-        }
-        return false;
     }
 
     // Get distance between two hexes
@@ -163,7 +114,7 @@ public class Map
         return new Vector3Int(x, y, z);
     }
 
-        // Converts hex coordinates to tilemap coordinates
+    // Converts hex coordinates to tilemap coordinates
     public static Vector3Int ConvertHexToTileCoords(Vector3Int hexCoords)
     {
         int x = hexCoords.z + (hexCoords.x - (hexCoords.x & 1)) / 2;
@@ -235,15 +186,11 @@ public class Map
         CreateMap();
     }
 
-    // Updates the map and redraws
-    public void RedrawMapAtSize(int newSize) {
-        SetNewMapRadius(newSize);
-        DrawNewMap();
-    }
-
     // Create a list of tiles for the map
     public void CreateMap()
     {
+        removedTiles.Clear();
+
         // Go to the larger of the new and old radii
         int radius = newMapRadius;
         if (newMapRadius < mapRadius)
@@ -272,91 +219,15 @@ public class Map
                     hexCoordsDict.Add(newHexCoords, new Hex(Resources.Load<TileData>("Tiles/Default"), newHexCoords));
                     tileHexCoordsDict.Add(newTileCoords, newHexCoords);
                 }
+                else if (distance > newMapRadius) {
+                    removedTiles.Add(newTileCoords);
+                    hexCoordsDict.Remove(newHexCoords);
+                    tileHexCoordsDict.Remove(newTileCoords);
+                }
             }
         }
 
         // Update new map radius
         mapRadius = newMapRadius;
-    }
-
-    // Clear map tiles and dicts
-    public void ClearMap() {
-        foreach (Vector3Int tileCoords in tileHexCoordsDict.Keys) {
-            tilemap.SetTile(tileCoords, null);
-        }
-        tilemap.CompressBounds();
-        tileHexCoordsDict.Clear();
-        hexCoordsDict.Clear();
-    }
-
-    // Clear map tile at coordinates
-    public void ClearMapTile(Vector3Int tileCoords) {
-        tilemap.SetTile(tileCoords, defaultTile);
-        tilemap.RefreshTile(tileCoords);
-    }
-
-    // Clear map tiles
-    public void ClearMapTiles() {
-        foreach (Vector3Int tileCoords in tileHexCoordsDict.Keys) {
-            tilemap.SetTile(tileCoords, null);
-        }
-    }
-
-    // Draw new map
-    public void DrawNewMap() {
-        CreateMap();
-        DrawMap();
-    }
-
-    // Draw the map
-    public void DrawMap()
-    {
-        List<Vector3Int> removeHexCoords = new List<Vector3Int>();
-        List<Vector3Int> removeTileCoords = new List<Vector3Int>();
-
-        // Draw the map
-        foreach (KeyValuePair<Vector3Int, Vector3Int> pair in tileHexCoordsDict)
-        {
-            Vector3Int tileCoords = pair.Key;
-            Vector3Int hexCoords = pair.Value;
-            int distance = GetDistanceToCenterHex(hexCoords);
-
-            // Remove tiles outside of new map radius
-            if (distance > mapRadius)
-            {
-                tilemap.SetTile(tileCoords, null);
-                if (tileHexCoordsDict.ContainsKey(tileCoords))
-                {
-                    removeHexCoords.Add(hexCoords);
-                    removeTileCoords.Add(tileCoords);
-                }
-            }
-            else
-            {
-                Tile currentTile = (Tile)tilemap.GetTile(tileCoords);
-                if (currentTile != defaultTile && currentTile != null)
-                {
-                    continue;
-                }
-                tilemap.SetTile(tileCoords, defaultTile);
-            }
-        }
-
-        // Remove the outer tiles
-        for (int i = 0; i < removeHexCoords.Count; i++)
-        {
-            hexCoordsDict.Remove(removeHexCoords[i]);
-        }
-        removeHexCoords.Clear();
-
-        for (int i = 0; i < removeTileCoords.Count; i++)
-        {
-            tileHexCoordsDict.Remove(removeTileCoords[i]);
-        }
-        removeTileCoords.Clear();
-
-        // Set new map size
-        tilemap.CompressBounds();
-        tilemap.RefreshAllTiles();
     }
 }

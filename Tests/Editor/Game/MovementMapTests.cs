@@ -54,7 +54,7 @@ namespace Tests
 
             // Confirm shows correct number of movement tiles
             movementMap.CreateActionMap(newPiece, gameMap, fogMap);
-            Assert.AreEqual(18, movementMap.GetNumberMovementMapTiles());
+            Assert.AreEqual(18, movementMap.GetPaintedTiles().Count);
             Assert.AreEqual("Movement Tile", movementMap.GetPaintedTileAtTileCoords(new Vector3Int(1, 0, 0)).name);
             Assert.IsNull(movementMap.GetPaintedTileAtTileCoords(new Vector3Int(10, 10, 0)));
 

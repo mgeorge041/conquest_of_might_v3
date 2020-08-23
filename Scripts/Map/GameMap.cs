@@ -36,33 +36,6 @@ public class GameMap : Map
         CreateMap();
     }
 
-    // Constructor for actual gameplay
-    public GameMap(int mapRadius, Tilemap tilemap) {
-        this.mapRadius = mapRadius;
-        newMapRadius = mapRadius;
-
-        this.tilemap = tilemap;
-        tileGrid = tilemap.layoutGrid;
-        defaultTile = Resources.Load<Tile>("Tiles/Tiles/Grass");
-        DrawNewMap();
-    }
-
-    // Constructor
-    public GameMap(Tilemap tilemap) {
-        this.tilemap = tilemap;
-        tileGrid = tilemap.layoutGrid;
-        defaultTile = Resources.Load<Tile>("Tiles/Tiles/Grass");
-        DrawNewMap();
-    }
-
-    // Constructor
-    public GameMap(Tile defaultTile, Tilemap tilemap) {
-        this.defaultTile = defaultTile;
-        this.tilemap = tilemap;
-        tileGrid = tilemap.layoutGrid;
-        DrawNewMap();
-    }
-
     // Get hex from hex coords
     public new GameHex GetHexAtHexCoords(Vector3Int hexCoords) {
         if (hexCoordsDict.ContainsKey(hexCoords)) {
@@ -77,12 +50,6 @@ public class GameMap : Map
             return hexCoordsDict[tileHexCoordsDict[tileCoords]];
         }
         return null;
-    }
-
-    // Get hex from mouse position
-    public GameHex GetHexAtMousePosition(Vector3 mousePosition, Camera playerCamera) {
-        Vector3Int tileCoords = GetMouseTileCoords(playerCamera, mousePosition);
-        return GetHexAtTileCoords(tileCoords);
     }
 
     // Get all editor tile outlines within a certain radius 
@@ -139,72 +106,6 @@ public class GameMap : Map
 
         // Update new map size
         mapRadius = newMapRadius;
-    }
-
-    // Draw new map
-    public new void DrawNewMap() {
-        CreateMap();
-        DrawMap();
-    }
-
-    // Draw the map
-    public new void DrawMap() {
-        List<Vector3Int> removeHexCoords = new List<Vector3Int>();
-        List<Vector3Int> removeTileCoords = new List<Vector3Int>();
-
-        // Draw the map
-        foreach (KeyValuePair<Vector3Int, Vector3Int> pair in tileHexCoordsDict) {
-            Vector3Int tileCoords = pair.Key;
-            Vector3Int hexCoords = pair.Value;
-            int distance = GetDistanceToCenterHex(hexCoords);
-
-            // Remove tiles outside of new map radius
-            if (distance > mapRadius) {
-                tilemap.SetTile(tileCoords, null);
-                if (tileHexCoordsDict.ContainsKey(tileCoords)) {
-                    removeHexCoords.Add(hexCoords);
-                    removeTileCoords.Add(tileCoords);
-                }
-            }
-            else {
-                Tile currentTile = (Tile)tilemap.GetTile(tileCoords);
-                if (currentTile != defaultTile && currentTile != null) {
-                    continue;
-                }
-                tilemap.SetTile(tileCoords, defaultTile);
-            }
-        }
-
-        // Remove the outer tiles
-        for (int i = 0; i < removeHexCoords.Count; i++) {
-            hexCoordsDict.Remove(removeHexCoords[i]);
-        }
-        removeHexCoords.Clear();
-
-        for (int i = 0; i < removeTileCoords.Count; i++) {
-            tileHexCoordsDict.Remove(removeTileCoords[i]);
-        }
-        removeTileCoords.Clear();
-
-        // Set new map size
-        tilemap.CompressBounds();
-        tilemap.RefreshAllTiles();
-    }
-
-    // Positions a piece on the map
-    private void PositionPieceObject(GamePieceObject pieceObject, Vector3Int tileCoords) {
-        Vector3 tilePosition = tileGrid.CellToWorld(tileCoords);
-        pieceObject.transform.position = new Vector3(tilePosition.x, tilePosition.y, -1);
-    }
-
-    // Add and position piece object
-    public bool AddAndPositionPieceObject(GamePieceObject pieceObject, Vector3Int tileCoords) {
-        GamePiece piece = pieceObject.GetPiece();
-        bool addedPiece = AddPiece(piece, tileCoords);
-        if (addedPiece) {
-            PositionPieceObject(pieceObject, tileCoords);
-        }
-        return addedPiece;
     }
 
     // Add a game piece to the map
