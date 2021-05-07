@@ -46,9 +46,32 @@ public class GamePieceObject : MonoBehaviour
 
     // Set piece object position
     public void SetPosition(GameMapObject gameMapObject) {
-        Vector3Int tileCoords = Map.ConvertHexToTileCoords(piece.GetGameHex().GetHexCoords());
+        Vector3Int tileCoords = Hex.HexToTileCoords(piece.GetGameHex().GetHexCoords());
         Vector3 tilePosition = gameMapObject.tileGrid.CellToWorld(tileCoords);
-        transform.position = new Vector3(tilePosition.x, tilePosition.y, -1);
+        Vector3 newPosition = new Vector3(tilePosition.x, tilePosition.y, -1);
+        StartCoroutine(MoveOverTime(newPosition));
+        //transform.position = new Vector3(tilePosition.x, tilePosition.y, -1);
+    }
+
+    // Animate movement of piece
+    public IEnumerator AnimateMove(Vector3 newPosition) {
+        while (transform.position != newPosition) {
+            transform.position = Vector3.MoveTowards(transform.position, newPosition, 5 * Time.deltaTime);
+            yield return new WaitForEndOfFrame();
+        }
+    }
+
+    // Animate movement of piece
+    public IEnumerator MoveOverTime(Vector3 newPosition) {
+        float elapsedTime = 0;
+        float seconds = 2;
+        Vector3 startingPos = transform.position;
+        while (elapsedTime < seconds) {
+            transform.position = Vector3.Lerp(startingPos, newPosition, (elapsedTime / seconds));
+            elapsedTime += Time.deltaTime;
+            yield return new WaitForEndOfFrame();
+        }
+        transform.position = newPosition;
     }
 
     // Set the width of the lifebar or deathbar

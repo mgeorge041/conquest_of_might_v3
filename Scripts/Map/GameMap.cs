@@ -6,10 +6,10 @@ using UnityEngine;
 using UnityEngine.Tilemaps;
 using UnityEngine.EventSystems;
 
-public class GameMap : Map
+public class GameMap : Map<GameHex>
 {
     // Coords and game hexes
-    private Dictionary<Vector3Int, GameHex> hexCoordsDict = new Dictionary<Vector3Int, GameHex>();
+    private new Dictionary<Vector3Int, GameHex> hexCoordsDict = new Dictionary<Vector3Int, GameHex>();
 
     // Pieces
     private Dictionary<int, List<GamePiece>> pieces = new Dictionary<int, List<GamePiece>>();
@@ -76,6 +76,7 @@ public class GameMap : Map
     }
 
     // Create a list of tiles for the map
+    /*
     public new void CreateMap() {
         // Go to the larger of the new and old radii
         int radius = newMapRadius;
@@ -107,6 +108,7 @@ public class GameMap : Map
         // Update new map size
         mapRadius = newMapRadius;
     }
+    */
 
     // Add a game piece to the map
     public bool AddPiece(GamePiece piece, Vector3Int tileCoords) {

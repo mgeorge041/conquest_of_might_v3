@@ -4,14 +4,16 @@ using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
 using UnityEngine.Tilemaps;
+using UnityEditor;
 
 namespace Tests
 {
     public class GameMapTests
     {
         // Create game map
-        private GameMap CreateGameMap() {
-            GameMap gameMap = new GameMap(8);
+        public static GameMap CreateTestGameMap() {
+            GameMap gameMap = TestFunctions.CreateClassObject<GameMap>("Assets/Prefabs/Map/Game Map.prefab");
+            gameMap.CreateMap();
             return gameMap;
         }
 
@@ -27,7 +29,7 @@ namespace Tests
         // Test create game map
         [Test]
         public void CreatesGameMap() {
-            GameMap gameMap = CreateGameMap();
+            GameMap gameMap = CreateTestGameMap();
             Assert.IsNotNull(gameMap);
             Assert.AreEqual(8, gameMap.GetMapRadius());
         }
@@ -35,7 +37,7 @@ namespace Tests
         // Test adding piece
         [Test]
         public void AddsPiece() {
-            GameMap gameMap = CreateGameMap();
+            GameMap gameMap = CreateTestGameMap();
             Vector3Int tileCoords = new Vector3Int(0, 0, 0);
 
             // Confirm adds piece
@@ -49,7 +51,7 @@ namespace Tests
         // Test adding 2nd piece
         [Test]
         public void AddsOnlyOnePieceToTile() {
-            GameMap gameMap = CreateGameMap();
+            GameMap gameMap = CreateTestGameMap();
             Vector3Int tileCoords = new Vector3Int(0, 0, 0);
 
             // Confirm adds piece
@@ -69,7 +71,7 @@ namespace Tests
         // Test getting piece at hex coords
         [Test]
         public void GetsPieceAtHexCoords() {
-            GameMap gameMap = CreateGameMap();
+            GameMap gameMap = CreateTestGameMap();
             AddTestPiece(gameMap);
 
             // Confirm get piece
@@ -81,7 +83,7 @@ namespace Tests
         // Test get hex at hex coords
         [Test]
         public void GetsHexAtHexCoords() {
-            GameMap gameMap = CreateGameMap();
+            GameMap gameMap = CreateTestGameMap();
             Vector3Int hexCoords = new Vector3Int(0, 0, 0);
 
             // Confirm gets hex that is in map
@@ -105,7 +107,7 @@ namespace Tests
         // Test get hex at tile coords
         [Test]
         public void GetsHexAtTileCoords() {
-            GameMap gameMap = CreateGameMap();
+            GameMap gameMap = CreateTestGameMap();
             Vector3Int hexCoords = new Vector3Int(0, 0, 0);
 
             // Confirm gets hex that is in map
@@ -126,7 +128,7 @@ namespace Tests
         // Test move piece
         [Test]
         public void MovesPiece() {
-            GameMap gameMap = CreateGameMap();
+            GameMap gameMap = CreateTestGameMap();
             Vector3Int hexCoords = new Vector3Int(0, 0, 0);
             GameHex startingHex = gameMap.GetHexAtHexCoords(hexCoords);
             Unit unit = GamePieceTests.CreateTestUnitWithPlayer();
@@ -134,7 +136,7 @@ namespace Tests
 
             // Confirm piece is moved
             Vector3Int targetHexCoords = new Vector3Int(1, -1, 0);
-            Vector3Int targetTileCoords = Map.ConvertHexToTileCoords(targetHexCoords);
+            Vector3Int targetTileCoords = Hex.HexToTileCoords(targetHexCoords);
             GameHex targetHex = gameMap.GetHexAtTileCoords(targetTileCoords);
             gameMap.MovePiece(unit, targetTileCoords);
             Assert.IsNull(startingHex.GetPiece());
@@ -144,14 +146,14 @@ namespace Tests
         // Test attack piece
         [Test]
         public void AttacksPiece() {
-            GameMap gameMap = CreateGameMap();
+            GameMap gameMap = CreateTestGameMap();
             Vector3Int hexCoords = new Vector3Int(0, 0, 0);
             Vector3Int targetHexCoords = new Vector3Int(1, -1, 0);
 
             GameHex startingHex = gameMap.GetHexAtHexCoords(hexCoords);
             Unit unit = GamePieceTests.CreateTestUnitWithPlayer();
             gameMap.AddPiece(unit, hexCoords);
-            gameMap.AddPiece(unit, Map.ConvertHexToTileCoords(targetHexCoords));
+            gameMap.AddPiece(unit, Hex.HexToTileCoords(targetHexCoords));
 
             // Confirm piece is attacked
             GameHex targetHex = gameMap.GetHexAtHexCoords(targetHexCoords);
@@ -168,7 +170,7 @@ namespace Tests
         // Test kills piece
         [Test]
         public void AttacksAndKillsPiece() {
-            GameMap gameMap = CreateGameMap();
+            GameMap gameMap = CreateTestGameMap();
             Vector3Int hexCoords = new Vector3Int(0, 0, 0);
             Vector3Int targetHexCoords = new Vector3Int(1, -1, 0);
 
@@ -176,7 +178,7 @@ namespace Tests
             Unit unit = GamePieceTests.CreateTestUnitWithPlayer();
             gameMap.AddPiece(unit, hexCoords);
             unit = GamePieceTests.CreateTestUnitWithPlayer();
-            gameMap.AddPiece(unit, Map.ConvertHexToTileCoords(targetHexCoords));
+            gameMap.AddPiece(unit, Hex.HexToTileCoords(targetHexCoords));
 
             // Confirm piece is attacked
             GameHex targetHex = gameMap.GetHexAtHexCoords(targetHexCoords);

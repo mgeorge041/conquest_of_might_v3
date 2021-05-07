@@ -3,20 +3,27 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
+using UnityEngine.EventSystems;
 
-public class Map
+public class Map<T> : MonoBehaviour where T : Hex
 {
+    // Map variables
+    public Tile defaultTile;
+    public Tile highlightTile;
+    public Tilemap tilemap;
+    public Grid tileGrid;
+    public Camera playerCamera;
+    protected bool isOverTilemap = false;
+
     // Tilemap sizing
-    protected int newMapRadius = GameSetupData.mapRadius;
-    protected int mapRadius = GameSetupData.mapRadius;
+    protected int newMapRadius = 5;
+    protected int mapRadius = 5;
 
     // Tilemap variables
-    private Dictionary<Vector3Int, Hex> hexCoordsDict = new Dictionary<Vector3Int, Hex>();
+    protected Dictionary<Vector3Int, T> hexCoordsDict = new Dictionary<Vector3Int, T>();
     protected Dictionary<Vector3Int, Vector3Int> tileHexCoordsDict = new Dictionary<Vector3Int, Vector3Int>();
     protected List<Vector3Int> removedTiles = new List<Vector3Int>();
-
-    // Constructor
-    public Map() { }
+    protected List<Vector3Int> highlightTileCoords = new List<Vector3Int>();
 
     // Get map radius 
     public int GetMapRadius() {
@@ -29,30 +36,26 @@ public class Map
     }
 
     // Get hex coords dict
-    public Dictionary<Vector3Int, Hex> GetHexCoordsDict() {
+    public Dictionary<Vector3Int, T> GetHexCoordsDict() {
         return hexCoordsDict;
     }
 
-    // Get whether has tile
-    public bool HasTile(Vector3Int tileCoords) {
+    // Get tile hex coords dict
+    public Dictionary<Vector3Int, Vector3Int> GetTileHexCoordsDict()
+    {
+        return tileHexCoordsDict;
+    }
+
+    // Get whether has tile coords
+    public bool HasTileCoords(Vector3Int tileCoords) {
         if (tileHexCoordsDict.ContainsKey(tileCoords)) {
             return true;
         }
         return false;
     }
 
-    // Get tile hex coords dict
-    public Dictionary<Vector3Int, Vector3Int> GetTileHexCoordsDict() {
-        return tileHexCoordsDict;
-    }
-
-    // Get removed tiles
-    public List<Vector3Int> GetRemovedTiles() {
-        return removedTiles;
-    }
-
     // Get hex from hex coords
-    public Hex GetHexAtHexCoords(Vector3Int hexCoords) {
+    public T GetHexAtHexCoords(Vector3Int hexCoords) {
         if (hexCoordsDict.ContainsKey(hexCoords)) {
             return hexCoordsDict[hexCoords];
         }
@@ -60,7 +63,7 @@ public class Map
     }
 
     // Get hex from tile coords
-    public Hex GetHexAtTileCoords(Vector3Int tileCoords) {
+    public T GetHexAtTileCoords(Vector3Int tileCoords) {
         if (tileHexCoordsDict.ContainsKey(tileCoords)) {
             return hexCoordsDict[tileHexCoordsDict[tileCoords]];
         }
@@ -95,47 +98,9 @@ public class Map
         return GetDistanceHexCoords(hexCoords, Vector3Int.zero);
     }
 
-    // Converts hex coordinates to tilemap coordinates
-    public Vector3Int HexToTileCoords(Vector3Int hexCoords)
-    {
-        int x = hexCoords.z + (hexCoords.x - (hexCoords.x & 1)) / 2;
-        int y = hexCoords.x;
-
-        return new Vector3Int(x, y, 0);
-    }
-
-    // Converts tilemap coordinates to hex coordinates
-    public Vector3Int TileToHexCoords(Vector3Int tileCoords)
-    {
-        int x = tileCoords.y;
-        int y = -tileCoords.x - (tileCoords.y + (tileCoords.y & 1)) / 2;
-        int z = -x - y;
-
-        return new Vector3Int(x, y, z);
-    }
-
-    // Converts hex coordinates to tilemap coordinates
-    public static Vector3Int ConvertHexToTileCoords(Vector3Int hexCoords)
-    {
-        int x = hexCoords.z + (hexCoords.x - (hexCoords.x & 1)) / 2;
-        int y = hexCoords.x;
-
-        return new Vector3Int(x, y, 0);
-    }
-
-    // Converts tilemap coordinates to hex coordinates
-    public static Vector3Int ConvertTileToHexCoords(Vector3Int tileCoords)
-    {
-        int x = tileCoords.y;
-        int y = -tileCoords.x - (tileCoords.y + (tileCoords.y & 1)) / 2;
-        int z = -x - y;
-
-        return new Vector3Int(x, y, z);
-    }
-
     // Get all hexes within a certain radius 
-    public List<Hex> GetHexesInRange(Vector3Int centerHexCoords, int radius, bool includeCenter = false) {
-        List<Hex> hexesInRange = new List<Hex>();
+    public List<T> GetHexesInRange(Vector3Int centerHexCoords, int radius, bool includeCenter = false) {
+        List<T> hexesInRange = new List<T>();
 
         for (int i = -radius; i <= radius; i++) {
 
@@ -159,6 +124,27 @@ public class Map
         return hexesInRange;
     }
 
+    // Highlight all hexes with a certain radius
+    public void HighlightHexesInRange(Vector3Int centerHexCoords, int radius)
+    {
+        List<T> hexesInRange = GetHexesInRange(centerHexCoords, radius);
+        foreach (T hex in hexesInRange)
+        {
+            tilemap.SetTile(hex.GetTileCoords(), highlightTile);
+            highlightTileCoords.Add(hex.GetTileCoords());
+        }
+    }
+
+    // Dehighlight hexes
+    public void DehighlightHexes()
+    {
+        foreach (Vector3Int tileCoords in highlightTileCoords)
+        {
+            tilemap.SetTile(tileCoords, defaultTile);
+        }
+        highlightTileCoords.Clear();
+    }
+
     // Get all hex coordinates within a certain radius
     public List<Vector3Int> GetHexCoordsInRange(Vector3Int centerHexCoords, int radius) {
         List<Vector3Int> hexCoordsInRange = new List<Vector3Int>();
@@ -180,10 +166,25 @@ public class Map
         return hexCoordsInRange;
     }
 
+    // Get removed tiles
+    public List<Vector3Int> GetRemovedTiles()
+    {
+        return removedTiles;
+    }
+
     // Updates the map to a new size
     public void UpdateMapToRadius(int newRadius) {
         SetNewMapRadius(newRadius);
         CreateMap();
+        DrawMap();
+    }
+
+    // Updates the map to a new size
+    public void UpdateMapToRadius(float newRadius)
+    {
+        SetNewMapRadius((int)newRadius);
+        CreateMap();
+        DrawMap();
     }
 
     // Create a list of tiles for the map
@@ -210,13 +211,13 @@ public class Map
                 // Get z coordinate
                 int z = -i - j;
                 Vector3Int newHexCoords = new Vector3Int(i, j, z);
-                Vector3Int newTileCoords = HexToTileCoords(newHexCoords);
+                Vector3Int newTileCoords = Hex.HexToTileCoords(newHexCoords);
                 int distance = GetDistanceToCenterHex(newHexCoords);
 
                 // Only add tiles in size range
                 if (distance <= newMapRadius && !hexCoordsDict.ContainsKey(newHexCoords))
                 {
-                    hexCoordsDict.Add(newHexCoords, new Hex(Resources.Load<TileData>("Tiles/Default"), newHexCoords));
+                    hexCoordsDict.Add(newHexCoords, (T)Convert.ChangeType(new Hex(Resources.Load<TileData>("Tiles/Default"), newHexCoords), typeof(T)));
                     tileHexCoordsDict.Add(newTileCoords, newHexCoords);
                 }
                 else if (distance > newMapRadius) {
@@ -229,5 +230,105 @@ public class Map
 
         // Update new map radius
         mapRadius = newMapRadius;
+    }
+
+    // Set default tile
+    public void SetDefaultTile(Tile defaultTile)
+    {
+        this.defaultTile = defaultTile;
+    }
+
+    // Draw the map
+    public void DrawMap()
+    {
+        ClearMap();
+        PaintMap();
+    }
+
+    // Paint map tiles
+    public void PaintMap()
+    {
+        foreach (Vector3Int tileCoords in tileHexCoordsDict.Keys)
+        {
+            tilemap.SetTile(tileCoords, defaultTile);
+        }
+        tilemap.RefreshAllTiles();
+    }
+
+    // Clear map tiles and dicts
+    public void ClearMap()
+    {
+        foreach (Vector3Int tileCoords in removedTiles)
+        {
+            tilemap.SetTile(tileCoords, null);
+        }
+        tilemap.CompressBounds();
+    }
+
+    // Clear map tile at coordinates
+    public void ClearMapTile(Vector3Int tileCoords)
+    {
+        tilemap.SetTile(tileCoords, defaultTile);
+        tilemap.RefreshTile(tileCoords);
+    }
+
+    // Get world coordinates from tilemap coordinates
+    public Vector3 GetWorldCoordsFromTileCoords(Vector3Int tileCoords)
+    {
+        return tileGrid.CellToWorld(tileCoords);
+    }
+
+    // Get tilemap coordinates from mouse position
+    public Vector3Int GetMouseTileCoords(Camera playerCamera, Vector3 mousePosition)
+    {
+        return tileGrid.WorldToCell(playerCamera.ScreenToWorldPoint(mousePosition));
+    }
+
+    // Get hex coordinates from mouse position
+    public Vector3Int GetMouseHexCoords(Camera playerCamera, Vector3 mousePosition)
+    {
+        Vector3Int tileCoords = GetMouseTileCoords(playerCamera, mousePosition);
+        return GetHexCoordsFromTileCoords(tileCoords);
+    }
+
+    // Get whether over a tilemap tile
+    public bool MouseOverTile()
+    {
+        return isOverTilemap;
+    }
+
+    // Mouse clicks
+    public void OnMouseDown()
+    {
+        Debug.Log("clicked mouse on tile: " + GetMouseHexCoords(playerCamera, Input.mousePosition));
+    }
+
+    // Mouse enters
+    public void OnMouseEnter()
+    {
+        // Do nothing if over UI
+        if (EventSystem.current.IsPointerOverGameObject())
+        {
+            return;
+        }
+        isOverTilemap = true;
+    }
+
+    // Mouse exits
+    public void OnMouseExit()
+    {
+        // Do nothing if over UI
+        if (EventSystem.current.IsPointerOverGameObject())
+        {
+            return;
+        }
+        isOverTilemap = false;
+    }
+
+    // Start
+    void Start()
+    {
+        CreateMap();
+        PaintMap();
     }
 }

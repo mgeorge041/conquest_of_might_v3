@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -14,9 +15,13 @@ public abstract class CardDisplay : MonoBehaviour
     public Text cardName;
     public Image res1;
     public Text res1Cost;
+    public GameObject cardBack;
 
     // Card images
     public Image cardBorder;
+
+    // Card rotation
+    protected int flipTimer;
 
     // Sets info shared by all cards
     public void SetSharedInfo(Card card) {
@@ -80,6 +85,31 @@ public abstract class CardDisplay : MonoBehaviour
             Debug.Log("i");
         }
         */
+    }
+
+    // Set is drawn
+    public void SetIsDrawn() {
+        transform.localScale = new Vector3(0, 0, 1);
+        transform.Rotate(new Vector3(0, -180, 0));
+        cardBack.SetActive(true);
+        StartCoroutine(RotateDrawnCard());
+    }
+
+    // Rotate drawn card
+    public IEnumerator RotateDrawnCard() {
+        float scaleIncrease = 1f / 180f;
+        for (int i = 0; i < 180; i++) {
+            yield return null;
+            transform.Rotate(new Vector3(0, 1, 0));
+            transform.localScale = new Vector3(transform.localScale.x + scaleIncrease, transform.localScale.y + scaleIncrease, 1);
+            flipTimer++;
+
+            if (flipTimer == 90) { 
+                Debug.Log("setting false at: " + transform.rotation.y);
+                cardBack.SetActive(false);
+            }
+        }
+        flipTimer = 0;
     }
 
     // Start is called before the first frame update

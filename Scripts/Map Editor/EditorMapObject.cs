@@ -114,7 +114,7 @@ public class EditorMapObject : MapObject
     // Paint tile to tilemap
     private void PaintTile() {
         Vector3Int tileCoords = GetMouseTileCoords(mainCamera, Input.mousePosition);
-        if (!editorMap.HasTile(tileCoords)) {
+        if (!editorMap.HasTileCoords(tileCoords)) {
             return;
         }
 

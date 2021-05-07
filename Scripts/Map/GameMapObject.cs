@@ -9,6 +9,6 @@ public class GameMapObject : MapObject
 
     // Set game map
     public void SetGameMap(GameMap gameMap) {
-        map = gameMap;
+        //map = gameMap;
     }
 }

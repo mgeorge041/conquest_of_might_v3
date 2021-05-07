@@ -4,6 +4,7 @@ using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
 using UnityEngine.Tilemaps;
+using UnityEditor;
 
 namespace Tests
 {
@@ -21,9 +22,9 @@ namespace Tests
         };
 
         // Create map for tests
-        private Map CreateMap() {
-            Map map = new Map();
-            map.CreateMap();
+        public static Map<Hex> CreateTestMap() {
+            Map<Hex> map = TestFunctions.CreateClassObject<Map<Hex>>("Assets/Prefabs/Map/Map.prefab");
+            //map.CreateMap();
             return map;
         }
 
@@ -31,14 +32,14 @@ namespace Tests
         [Test]
         public void MapCreated()
         {
-            Map map = CreateMap();
+            Map<Hex> map = CreateTestMap();
             Assert.IsNotNull(map);
         }
 
         // Test getting distance between hexes
         [Test]
         public void CorrectDistanceBetweenHexes() {
-            Map map = CreateMap();
+            Map<Hex> map = CreateTestMap();
             Vector3Int hexA = new Vector3Int(1, -1, 0);
             Vector3Int hexB = new Vector3Int(2, -2, 0);
             int distance = map.GetDistanceHexCoords(hexA, hexB);
@@ -53,7 +54,7 @@ namespace Tests
         // Test getting distance to center hex
         [Test]
         public void CorrectDistanceCenterHex() {
-            Map map = CreateMap();
+            Map<Hex> map = CreateTestMap();
             Vector3Int hexA = new Vector3Int(1, -1, 0);
             int distance = map.GetDistanceToCenterHex(hexA);
             Assert.AreEqual(distance, 1);
@@ -66,33 +67,33 @@ namespace Tests
         // Test converting hex to tile coords
         [Test]
         public void CorrectHexToTileCoords() {
-            Map map = CreateMap();
+            Map<Hex> map = CreateTestMap();
             Vector3Int hexCoords = new Vector3Int(1, -1, 0);
-            Vector3Int tileCoords = map.HexToTileCoords(hexCoords);
+            Vector3Int tileCoords = Hex.HexToTileCoords(hexCoords);
             Assert.AreEqual(tileCoords, new Vector3Int(0, 1, 0));
         }
 
         // Test converting tile to hex coords
         [Test]
         public void CorrectTileToHexCoords() {
-            Map map = CreateMap();
+            Map<Hex> map = CreateTestMap();
             Vector3Int tileCoords = new Vector3Int(1, -1, 0);
-            Vector3Int hexCoords = map.TileToHexCoords(tileCoords);
+            Vector3Int hexCoords = Hex.TileToHexCoords(tileCoords);
             Assert.AreEqual(hexCoords, new Vector3Int(-1, -1, 2));
         }
 
         // Test map is drawn correctly
         [Test]
         public void CorrectMapSize() {
-            Map map = CreateMap();
-            Assert.AreEqual(map.GetMapRadius(), GameSetupData.mapRadius);
-            Assert.AreEqual(map.GetHexCoordsDict().Count, 217);
+            Map<Hex> map = CreateTestMap();
+            Assert.AreEqual(5, map.GetMapRadius());
+            Assert.AreEqual(91, map.GetHexCoordsDict().Count);
         }
 
         // Test map updates size
         [Test]
         public void MapUpdatesSize() {
-            Map map = CreateMap();
+            Map<Hex> map = CreateTestMap();
             map.UpdateMapToRadius(7);
             Assert.AreEqual(7, map.GetMapRadius());
             Assert.AreEqual(169, map.GetHexCoordsDict().Count);
@@ -101,7 +102,7 @@ namespace Tests
         // Test get hexes within range
         [Test]
         public void GetsHexesInRange() {
-            Map map = CreateMap();
+            Map<Hex> map = CreateTestMap();
             Vector3Int hexCoords = new Vector3Int(0, 0, 0);
 
             // Confirm gets 6 tiles in 1 range
@@ -129,7 +130,7 @@ namespace Tests
         // Test get hex at hex coords
         [Test]
         public void GetsHexAtHexCoords() {
-            Map map = CreateMap();
+            Map<Hex> map = CreateTestMap();
             Vector3Int hexCoords = new Vector3Int(0, 0, 0);
 
             // Confirm gets hex that is in map
@@ -150,7 +151,7 @@ namespace Tests
         // Test get hex at tile coords
         [Test]
         public void GetsHexAtTileCoords() {
-            Map map = CreateMap();
+            Map<Hex> map = CreateTestMap();
             Vector3Int hexCoords = new Vector3Int(0, 0, 0);
 
             // Confirm gets hex that is in map

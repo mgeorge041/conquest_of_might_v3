@@ -22,11 +22,10 @@ public class MapCamera : MonoBehaviour
     private bool scrollDrag = false;
     public GameObject uiPanel;
     public int uiPixelWidth;
+    public int uiPixelHeight;
 
     // Centers camera on position
     public void MoveCameraToPosition(Vector3 newPosition) {
-        Debug.Log("camera position: " + transform.position);
-        Debug.Log("moving to: " + newPosition);
         transform.position = new Vector3(Mathf.Clamp(newPosition.x, minXPos, maxXPos),
                 Mathf.Clamp(newPosition.y, minYPos, maxYPos), -10);
     }
@@ -102,10 +101,11 @@ public class MapCamera : MonoBehaviour
 
         // Get coverage of screen by UI
         float screenWidth = Screen.width;
-        float uiRatio = uiPixelWidth / screenWidth;
-        float uncoveredRatio = 1 - uiRatio;
+        float uiHorizontalRatio = uiPixelWidth / screenWidth;
+        float uncoveredRatio = 1 - uiHorizontalRatio;
         float uncoveredScreen = uncoveredRatio * cameraWidth;
         float mapMid = (0.5f - uncoveredRatio / 2) * cameraWidth;
+        float uiVerticalRatio = uiPixelHeight / 100;
 
         // Set min and max positions
         if (tilemapHeight * 2 < Screen.height / 100) {
@@ -114,7 +114,7 @@ public class MapCamera : MonoBehaviour
         }
         else {
             maxYPos = Math.Max(tilemapHeight - currentZoom, 0);
-            minYPos = -maxYPos;
+            minYPos = -maxYPos - uiVerticalRatio;
         }
 
         if (uncoveredScreen > tilemapWidth) {
@@ -123,7 +123,7 @@ public class MapCamera : MonoBehaviour
         }
         else {
             // This is for UI that covers part of the screen
-            maxXPos = Math.Max(tilemapHalfWidth - halfCameraWidth + uiRatio * cameraWidth, 0);
+            maxXPos = Math.Max(tilemapHalfWidth - halfCameraWidth + uiHorizontalRatio * cameraWidth, 0);
             minXPos = -(tilemapHalfWidth - halfCameraWidth);
             //maxXPos = Math.Max(tilemapHalfWidth - halfCameraWidth, 0);
             //minXPos = Math.Min(-(tilemapHalfWidth - halfCameraWidth), 0);

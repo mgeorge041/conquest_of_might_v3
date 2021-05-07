@@ -27,7 +27,26 @@ public class Hex
 
     // Get tile coords
     public Vector3Int GetTileCoords() {
-        return Map.ConvertHexToTileCoords(hexCoords);
+        return HexToTileCoords(hexCoords);
+    }
+
+    // Converts hex coordinates to tilemap coordinates
+    public static Vector3Int HexToTileCoords(Vector3Int hexCoords)
+    {
+        int x = hexCoords.z + (hexCoords.x - (hexCoords.x & 1)) / 2;
+        int y = hexCoords.x;
+
+        return new Vector3Int(x, y, 0);
+    }
+
+    // Converts tilemap coordinates to hex coordinates
+    public static Vector3Int TileToHexCoords(Vector3Int tileCoords)
+    {
+        int x = tileCoords.y;
+        int y = -tileCoords.x - (tileCoords.y + (tileCoords.y & 1)) / 2;
+        int z = -x - y;
+
+        return new Vector3Int(x, y, z);
     }
 
     // Get tile

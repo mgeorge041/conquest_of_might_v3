@@ -25,7 +25,7 @@ public class GameManager
 
         // Create players
         for (int i = 0; i < numPlayers; i++) {
-            Vector3Int startTileCoords = Map.ConvertHexToTileCoords(startLocations[i]);
+            Vector3Int startTileCoords = Hex.HexToTileCoords(startLocations[i]);
             Player newPlayer = new Player(i, startTileCoords, gameMap, this);
             gameMap.AddPiece(GamePiece.CreateCastle(newPlayer), startTileCoords);
 

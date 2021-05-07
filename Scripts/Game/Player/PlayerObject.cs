@@ -110,7 +110,8 @@ public class PlayerObject : MonoBehaviour
 
     // Show current player's turn
     public IEnumerator ShowDrawnCard(CardDisplay cardDisplay) {
-        yield return new WaitForSeconds(3);
+        cardDisplay.SetIsDrawn();
+        yield return new WaitForSeconds(2);
         
         // Add non-resource cards to hand
         if (cardDisplay.GetCard().cardType != CardType.Resource) {
@@ -185,7 +186,7 @@ public class PlayerObject : MonoBehaviour
     private void AttackPiece(Vector3Int targetTileCoords) {
 
         // Get targeted piece and player object
-        GamePiece targetPiece = gameMap.GetHexPiece(Map.ConvertTileToHexCoords(targetTileCoords));
+        GamePiece targetPiece = gameMap.GetHexPiece(Hex.TileToHexCoords(targetTileCoords));
         PlayerObject playerObject = gameManagerObject.GetPlayerObject(targetPiece.GetPlayerId());
 
         // Attack piece
@@ -273,7 +274,7 @@ public class PlayerObject : MonoBehaviour
     public IEnumerator ShowCurrentPlayerTurn(int playerId) {
         currentTurnText.transform.parent.gameObject.SetActive(true);
         currentTurnText.text = "Player " + (playerId + 1) + " Turn";
-        yield return new WaitForSeconds(3);
+        yield return new WaitForSeconds(2);
         if (!IsTurn()) {
             currentTurnText.transform.parent.gameObject.SetActive(false);
         }

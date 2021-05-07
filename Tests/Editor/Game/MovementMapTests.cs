@@ -60,7 +60,7 @@ namespace Tests
 
             // Confirm each of the 6 adjacent tiles are painted
             for (int i = 0; i < neighborCoords.Length; i++) {
-                Assert.IsTrue(movementMap.MoveableToTile(Map.ConvertHexToTileCoords(neighborCoords[i])));
+                Assert.IsTrue(movementMap.MoveableToTile(Hex.HexToTileCoords(neighborCoords[i])));
             }
         }
 

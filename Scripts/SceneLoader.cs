@@ -10,6 +10,10 @@ public class SceneLoader : MonoBehaviour
         SceneManager.LoadScene(sceneName);
     }
 
+    public static void LoadDeckBuilder() {
+        SceneManager.LoadScene("Deck Builder");
+    }
+
     // Start is called before the first frame update
     void Start()
     {

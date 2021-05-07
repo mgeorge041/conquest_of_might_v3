@@ -1,4 +1,4 @@
-﻿public class EditorMap : Map
+﻿public class EditorMap : Map<Hex>
 {
     // Constructor
     public EditorMap() {

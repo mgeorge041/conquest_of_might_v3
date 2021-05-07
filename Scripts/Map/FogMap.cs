@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
-public class FogMap : Map
+public class FogMap : Map<Hex>
 {
 
     private List<Vector3Int> visibleTileCoords = new List<Vector3Int>();

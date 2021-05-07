@@ -6,7 +6,7 @@ using UnityEngine.EventSystems;
 
 public class MapObject : MonoBehaviour
 {
-    protected Map map;
+    protected Map<Hex> map;
 
     public Tile defaultTile;
     public Tilemap tilemap;
@@ -16,7 +16,7 @@ public class MapObject : MonoBehaviour
     protected bool isOverTilemap = false;
 
     // Get map
-    public Map GetMap() {
+    public Map<Hex> GetMap() {
         return map;
     }
 

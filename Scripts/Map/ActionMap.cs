@@ -4,7 +4,7 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
-public class ActionMap : Map
+public class ActionMap : Map<Hex>
 {
     public Tile movementTile;
     public Tile attackTile;
@@ -94,7 +94,7 @@ public class ActionMap : Map
             List<GameHex> gameHexes = gameMap.GetGameHexesInRange(hexCoords, remainingSpeed + range);
             for (int i = 0; i < gameHexes.Count; i++) {
                 GameHex gameHex = gameHexes[i];
-                Vector3Int tileCoords = HexToTileCoords(gameHex.GetHexCoords());
+                Vector3Int tileCoords = Hex.HexToTileCoords(gameHex.GetHexCoords());
                 int distance = gameMap.GetDistanceHexCoords(hexCoords, gameHex.GetHexCoords());
                 
                 // Set tile to appropriate movement tile type
@@ -118,12 +118,12 @@ public class ActionMap : Map
         ClearActionTiles();
 
         // Get hexes in range of castle
-        Vector3Int startHexCoords = ConvertTileToHexCoords(startTileCoords);
+        Vector3Int startHexCoords = Hex.TileToHexCoords(startTileCoords);
         List<GameHex> gameHexes = gameMap.GetGameHexesInRange(startHexCoords, 1);
 
         for (int i = 0; i < gameHexes.Count; i++) {
             GameHex gameHex = gameHexes[i];
-            Vector3Int tileCoords = ConvertHexToTileCoords(gameHex.GetHexCoords());
+            Vector3Int tileCoords = Hex.HexToTileCoords(gameHex.GetHexCoords());
 
             // Set tile to appropriate movement tile type
             if (!gameHex.HasPiece()) {

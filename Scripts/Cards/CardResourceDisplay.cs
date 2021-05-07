@@ -26,6 +26,6 @@ public class CardResourceDisplay : CardDisplay
     // Update is called once per frame
     void Update()
     {
-        
+
     }
 }

@@ -40,6 +40,6 @@ public class CardUnitDisplay : CardPieceDisplay
     // Update is called once per frame
     void Update()
     {
-        
+
     }
 }
