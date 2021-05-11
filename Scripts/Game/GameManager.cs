@@ -15,12 +15,12 @@ public class GameManager
 
         // All the start positions, 2 spaces from the corners of the board
         Vector3Int[] startLocations = {
-            new Vector3Int(0, gameMap.GetMapRadius() - 2, -(gameMap.GetMapRadius() - 2)),
-            new Vector3Int(0, -(gameMap.GetMapRadius() - 2), gameMap.GetMapRadius() - 2),
-            new Vector3Int(-(gameMap.GetMapRadius() - 2), gameMap.GetMapRadius() - 2, 0),
-            new Vector3Int(gameMap.GetMapRadius() - 2, -(gameMap.GetMapRadius() - 2), 0),
-            new Vector3Int(-(gameMap.GetMapRadius() - 2), 0, gameMap.GetMapRadius() - 2),
-            new Vector3Int(gameMap.GetMapRadius() - 2, 0, -(gameMap.GetMapRadius() - 2))
+            new Vector3Int(0, gameMap.mapRadius - 2, -(gameMap.mapRadius - 2)),
+            new Vector3Int(0, -(gameMap.mapRadius - 2), gameMap.mapRadius - 2),
+            new Vector3Int(-(gameMap.mapRadius - 2), gameMap.mapRadius - 2, 0),
+            new Vector3Int(gameMap.mapRadius - 2, -(gameMap.mapRadius - 2), 0),
+            new Vector3Int(-(gameMap.mapRadius - 2), 0, gameMap.mapRadius - 2),
+            new Vector3Int(gameMap.mapRadius - 2, 0, -(gameMap.mapRadius - 2))
         };
 
         // Create players

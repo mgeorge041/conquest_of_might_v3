@@ -9,7 +9,7 @@ public class Building : GamePiece
     // Constructor for playerless building
     public Building(CardBuilding cardBuilding) {
         this.cardBuilding = cardBuilding;
-        SetSharedInfo(cardBuilding);
+        SetCardStats(cardBuilding);
         pieceType = PieceType.Building;
     }
 
@@ -17,7 +17,7 @@ public class Building : GamePiece
     public Building(CardBuilding cardBuilding, Player player) {
         this.cardBuilding = cardBuilding;
         this.player = player;
-        SetSharedInfo(cardBuilding);
+        SetCardStats(cardBuilding);
         pieceType = PieceType.Building;
     }
 
@@ -29,5 +29,6 @@ public class Building : GamePiece
     // Set card
     public void SetCard(CardBuilding cardBuilding) {
         this.cardBuilding = cardBuilding;
+        base.SetCardStats(cardBuilding);
     }
 }

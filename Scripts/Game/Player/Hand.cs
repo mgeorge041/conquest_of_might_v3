@@ -6,10 +6,13 @@ using UnityEngine;
 public class Hand
 {
     // Cards
-    private List<CardPiece> cards = new List<CardPiece>();
+    public List<CardPiece> cards { get; } = new List<CardPiece>();
 
     // Player
     private Player player;
+
+    // Constructor
+    public Hand() { }
 
     // Constructor
     public Hand(Player player) {
@@ -34,11 +37,6 @@ public class Hand
         }
     }
 
-    // Get all cards in hand
-    public List<CardPiece> GetCards() {
-        return cards;
-    }
-
     // Play a card
     public void PlayCard(CardPiece selectedCard) {
         if (selectedCard == null) {
@@ -50,13 +48,13 @@ public class Hand
 
     // Set whether card is playable
     private void SetPlayable(CardPiece cardPiece) {
-        cardPiece.SetPlayable(CardIsPlayable(cardPiece));
+        cardPiece.isPlayable = CardIsPlayable(cardPiece);
     }
 
     // Set whether card is playable
     public void SetPlayableCards() {
         for (int i = 0; i < cards.Count; i++) {
-            cards[i].SetPlayable(CardIsPlayable(cards[i]));
+            cards[i].isPlayable = CardIsPlayable(cards[i]);
         }
     }
 

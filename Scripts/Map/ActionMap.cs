@@ -4,7 +4,7 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
-public class ActionMap : Map<Hex>
+public class ActionMap : Map
 {
     public Tile movementTile;
     public Tile attackTile;
@@ -13,7 +13,7 @@ public class ActionMap : Map<Hex>
 
     // Constructor
     public ActionMap() {
-        CreateMap();
+        CreateMap<Hex>();
         SetMovementMapTiles();
     }
 
@@ -21,7 +21,7 @@ public class ActionMap : Map<Hex>
     public ActionMap(int mapRadius) {
         this.mapRadius = mapRadius;
         newMapRadius = mapRadius;
-        CreateMap();
+        CreateMap<Hex>();
         SetMovementMapTiles();
     }
 
@@ -82,20 +82,20 @@ public class ActionMap : Map<Hex>
         if (piece == null) {
             return;
         }
-        Vector3Int hexCoords = piece.GetGameHex().GetHexCoords();
+        Vector3Int hexCoords = piece.gameHex.hexCoords;
         List<Vector3Int> visibleTileCoords = fogOfWarMap.GetVisibleTileCoords();
 
         if (piece.pieceType == PieceType.Unit) {
             Unit unit = (Unit)piece;
-            int remainingSpeed = unit.GetRemainingSpeed();
-            int range = unit.GetRange();
+            int remainingSpeed = unit.remainingSpeed;
+            int range = unit.range;
 
             // Get hexes in range of unit movement and set tiles
-            List<GameHex> gameHexes = gameMap.GetGameHexesInRange(hexCoords, remainingSpeed + range);
+            List<GameHex> gameHexes = gameMap.GetHexesInRange<GameHex>(hexCoords, remainingSpeed + range);
             for (int i = 0; i < gameHexes.Count; i++) {
                 GameHex gameHex = gameHexes[i];
-                Vector3Int tileCoords = Hex.HexToTileCoords(gameHex.GetHexCoords());
-                int distance = gameMap.GetDistanceHexCoords(hexCoords, gameHex.GetHexCoords());
+                Vector3Int tileCoords = Hex.HexToTileCoords(gameHex.hexCoords);
+                int distance = Hex.GetDistanceHexCoords(hexCoords, gameHex.hexCoords);
                 
                 // Set tile to appropriate movement tile type
                 if (!gameHex.HasPiece()) {
@@ -104,7 +104,7 @@ public class ActionMap : Map<Hex>
                     }
                 }
                 else {
-                    if (gameHex.GetPiece().GetPlayerId() != unit.GetPlayerId() && visibleTileCoords.Contains(tileCoords)) {
+                    if (gameHex.piece.GetPlayerId() != unit.GetPlayerId() && visibleTileCoords.Contains(tileCoords)) {
                         paintedTiles[tileCoords] = attackTile;
                     }
                 }
@@ -119,11 +119,11 @@ public class ActionMap : Map<Hex>
 
         // Get hexes in range of castle
         Vector3Int startHexCoords = Hex.TileToHexCoords(startTileCoords);
-        List<GameHex> gameHexes = gameMap.GetGameHexesInRange(startHexCoords, 1);
+        List<GameHex> gameHexes = gameMap.GetHexesInRange<GameHex>(startHexCoords, 1);
 
         for (int i = 0; i < gameHexes.Count; i++) {
             GameHex gameHex = gameHexes[i];
-            Vector3Int tileCoords = Hex.HexToTileCoords(gameHex.GetHexCoords());
+            Vector3Int tileCoords = Hex.HexToTileCoords(gameHex.hexCoords);
 
             // Set tile to appropriate movement tile type
             if (!gameHex.HasPiece()) {

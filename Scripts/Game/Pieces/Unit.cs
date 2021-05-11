@@ -6,20 +6,20 @@ using UnityEngine;
 public class Unit : GamePiece
 {
     private CardUnit cardUnit;
-    private int speed;
-    private int remainingSpeed;
+    public int speed { get; private set; }
+    public int remainingSpeed { get; private set; }
 
     // Constructor for playerless unit
     public Unit(CardUnit cardUnit) {
         this.cardUnit = cardUnit;
-        SetInfo();
+        SetCardStats();
     }
 
     // Constructor for player unit
     public Unit(CardUnit cardUnit, Player player) {
         this.cardUnit = cardUnit;
         this.player = player;
-        SetInfo();
+        SetCardStats();
     }
 
     // Get card
@@ -30,41 +30,37 @@ public class Unit : GamePiece
     // Set card
     public void SetCard(CardUnit cardUnit) {
         this.cardUnit = cardUnit;
-    }
-
-    // Get speed
-    public int GetSpeed() {
-        return speed;
-    }
-
-    // Get remaining speed
-    public int GetRemainingSpeed() {
-        return remainingSpeed;
+        SetCardStats();
     }
 
     // Decrease speed
     public void DecreaseSpeed(int speedDecrease) {
         remainingSpeed = Math.Max(remainingSpeed - speedDecrease, 0);
+        if (remainingSpeed == 0)
+        {
+            canMove = false;
+        }
         CheckHasActions();
     }
 
     // Reset at beginning of turn
     public new void ResetPiece() {
         remainingSpeed = speed;
-        SetCanAttack(true);
-        SetCanMove(true);
+        canAttack = true;
+        canMove = true;
         CheckHasActions();
     }
 
     // End piece turn
     public new void EndTurn() {
-        SetCanAttack(false);
+        canAttack = false;
         DecreaseSpeed(remainingSpeed);
+        CheckHasActions();
     }
 
     // Set information
-    public void SetInfo() {
-        SetSharedInfo(cardUnit);
+    public void SetCardStats() {
+        base.SetCardStats(cardUnit);
         speed = cardUnit.speed;
         pieceType = PieceType.Unit;
         remainingSpeed = speed;

@@ -82,7 +82,7 @@ public abstract class CardPieceDisplay : CardDisplay, IPointerClickHandler
 
     // Set highlighted status on click
     public void OnPointerClick(PointerEventData pointerEventData) {
-        if (GetCardPiece().IsPlayable() && playerObject.IsTurn()) {
+        if (GetCardPiece().isPlayable && playerObject.IsTurn()) {
 
             // Deselect if already highlighted
             if (!isHighlighted) {

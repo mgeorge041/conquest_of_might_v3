@@ -46,7 +46,7 @@ public class HandObject : MonoBehaviour
     // Show whether card is playable
     private void ShowPlayableCard(CardPieceDisplay cardDisplay) {
         CardPiece cardPiece = cardDisplay.GetCardPiece();
-        if (!cardPiece.IsPlayable()) {
+        if (!cardPiece.isPlayable) {
             cardDisplay.SetUnplayableBorder();
         }
     }
@@ -55,7 +55,7 @@ public class HandObject : MonoBehaviour
     public void ShowPlayableCards() {
         for (int i = 0; i < cards.Count; i++) {
             CardPiece cardPiece = cards[i].GetCardPiece();
-            if (!cardPiece.IsPlayable()) {
+            if (!cardPiece.isPlayable) {
                 cards[i].SetUnplayableBorder();
             }
             else {

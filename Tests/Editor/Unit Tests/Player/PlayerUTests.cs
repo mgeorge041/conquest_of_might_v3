@@ -5,10 +5,13 @@ using UnityEngine;
 using UnityEngine.TestTools;
 using UnityEngine.Tilemaps;
 
-namespace Tests
+namespace Tests.UTests.PlayerTests
 {
-    public class PlayerTests
+    public class PlayerUTests
     {
+        private Player player;
+        private Vector3Int startTileCoords;
+
         // Create a player
         public static Player CreateTestPlayer() {
             Vector3Int startTileCoords = new Vector3Int(-4, 4, 0);
@@ -16,33 +19,45 @@ namespace Tests
             return player;
         }
 
-        // Create a player with a game map
-        public static Player CreateTestPlayerWithGameMap() {
+        // Create a player with a specific ID
+        public static Player CreateTestPlayer(int playerId)
+        {
             Vector3Int startTileCoords = new Vector3Int(-4, 4, 0);
-            GameMap gameMap = new GameMap(GameSetupData.mapRadius);
-            Player player = new Player(0, startTileCoords, gameMap);
+            Player player = new Player(playerId, startTileCoords);
             return player;
+        }
+
+        // Setup
+        [SetUp]
+        public void Setup()
+        {
+            player = CreateTestPlayer();
+        }
+
+        // End
+        [TearDown]
+        public void Teardown()
+        {
+            player = null;
         }
 
         // Test create a player 
         [Test]
         public void PlayerCreated()
         {
-            Player player = CreateTestPlayer();
             Assert.IsNotNull(player);
         }
 
         // Test player initialized
         [Test]
         public void PlayerInitialized() {
-            Player player = CreateTestPlayer();
 
             // Confirm game data created
-            Assert.IsNotNull(player.GetPlayerGameData());
+            Assert.IsNotNull(player.gameData);
 
             // Confirm hand and deck initialized
-            Assert.IsNotNull(player.GetHand());
-            Assert.IsNotNull(player.GetDeck());
+            Assert.IsNotNull(player.hand);
+            Assert.IsNotNull(player.deck);
 
             // Confirm resources initialized
             Assert.IsNotNull(player.GetResources());

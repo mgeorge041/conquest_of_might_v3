@@ -26,7 +26,7 @@ public class GamePieceObject : MonoBehaviour
     // Set game piece
     public void SetPiece(GamePiece piece) {
         this.piece = piece;
-        piece.SetGamePieceObject(this);
+        //piece.gamePieceObject = this;
     }
 
     // Destroy this game object
@@ -36,7 +36,7 @@ public class GamePieceObject : MonoBehaviour
 
     // Show piece as disabled
     public void ShowPieceDisabled() {
-        if (piece.HasActions()) {
+        if (piece.hasActions) {
             art.color = new Color(1, 1, 1);
         }
         else {
@@ -46,7 +46,7 @@ public class GamePieceObject : MonoBehaviour
 
     // Set piece object position
     public void SetPosition(GameMapObject gameMapObject) {
-        Vector3Int tileCoords = Hex.HexToTileCoords(piece.GetGameHex().GetHexCoords());
+        Vector3Int tileCoords = Hex.HexToTileCoords(piece.gameHex.hexCoords);
         Vector3 tilePosition = gameMapObject.tileGrid.CellToWorld(tileCoords);
         Vector3 newPosition = new Vector3(tilePosition.x, tilePosition.y, -1);
         StartCoroutine(MoveOverTime(newPosition));
@@ -82,7 +82,7 @@ public class GamePieceObject : MonoBehaviour
 
     // Set the width of the lifebar for current health
     public void SetLifebarCurrentHealth() {
-        lifebar.fillAmount = (float)piece.GetCurrentHealth() / (float)piece.GetHealth();
+        lifebar.fillAmount = (float)piece.currentHealth / (float)piece.health;
     }
 
     // Set the card display's healthbar
@@ -131,13 +131,13 @@ public class GamePieceObject : MonoBehaviour
         if (cardPiece.cardType == CardType.Unit) {
             GamePieceObject newUnitObject = Instantiate(GetUnitPrefab(), parentTransform);
             newUnitObject.SetPiece(piece);
-            piece.SetGamePieceObject(newUnitObject);
+            //piece.gamePieceObject = newUnitObject;
             return newUnitObject;
         }
         else if (cardPiece.cardType == CardType.Building) {
             GamePieceObject newBuildingObject = Instantiate(GetUnitPrefab(), parentTransform);
             newBuildingObject.SetPiece(piece);
-            piece.SetGamePieceObject(newBuildingObject);
+            //piece.gamePieceObject = newBuildingObject;
             return newBuildingObject;
         }
         else {

@@ -35,7 +35,7 @@ public abstract class CardDisplay : MonoBehaviour
 
     // Destroys card
     public void Destroy() {
-        Destroy(gameObject);
+        C.Destroy(gameObject);
     }
 
     // Get and set card

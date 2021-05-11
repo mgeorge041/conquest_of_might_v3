@@ -1,16 +1,18 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.InteropServices.WindowsRuntime;
 using UnityEngine;
-using UnityEngine.Tilemaps;
 
 public class Hex
 {
-    protected TileData tileData;
-    protected Vector3Int hexCoords;
+    public TileData tileData { get; set; }
+    public Vector3Int hexCoords { get; protected set; }
+    public Vector3Int tileCoords { get; protected set; }
 
-    // Constructor
-    public Hex() {
+    // Empty constructor
+    public Hex()
+    {
 
     }
 
@@ -18,16 +20,23 @@ public class Hex
     public Hex(TileData tileData, Vector3Int hexCoords) {
         this.tileData = tileData;
         this.hexCoords = hexCoords;
+        tileCoords = HexToTileCoords(hexCoords);
     }
 
-    // Get hex coords
-    public Vector3Int GetHexCoords() {
-        return hexCoords;
-    }
-
-    // Get tile coords
-    public Vector3Int GetTileCoords() {
-        return HexToTileCoords(hexCoords);
+    // Create hex based on type
+    public static Hex CreateHex<T>(TileData defaultTile, Vector3Int newHexCoords) where T : Hex
+    {
+        if (typeof(T) == typeof(Hex))
+        {
+            Hex newHex = new Hex(defaultTile, newHexCoords);
+            return newHex;
+        }
+        else if (typeof(T) == typeof(GameHex))
+        {
+            GameHex newHex = new GameHex(defaultTile, newHexCoords);
+            return newHex;
+        }
+        return null;
     }
 
     // Converts hex coordinates to tilemap coordinates
@@ -49,16 +58,28 @@ public class Hex
         return new Vector3Int(x, y, z);
     }
 
-    // Get tile
-    public TileData GetTile()
+    // Get distance between two hexes
+    public static int GetDistanceHexes(Hex hex1, Hex hex2)
     {
-        return tileData;
+        return GetDistanceHexCoords(hex1.hexCoords, hex2.hexCoords);
     }
 
-    // Set tile
-    public void SetTile(TileData tileData)
+    // Get distance between two hex coordinates
+    public static int GetDistanceHexCoords(Vector3Int hexCoords1, Vector3Int hexCoords2)
     {
-        this.tileData = tileData;
+        int x = Math.Abs(hexCoords1.x - hexCoords2.x);
+        int y = Math.Abs(hexCoords1.y - hexCoords2.y);
+        int z = Math.Abs(hexCoords1.z - hexCoords2.z);
+
+        int distance = (x + y + z) / 2;
+
+        return distance;
+    }
+
+    // Get the distance between the center hex and hex coordinates
+    public static int GetDistanceToCenterHex(Vector3Int hexCoords)
+    {
+        return GetDistanceHexCoords(hexCoords, Vector3Int.zero);
     }
 
     // Get move cost

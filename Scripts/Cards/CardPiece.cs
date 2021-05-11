@@ -14,17 +14,7 @@ public class CardPiece : Card
     public int res2Cost;
 
     // Playable
-    protected bool playable;
-
-    // Set playable
-    public void SetPlayable(bool playable) {
-        this.playable = playable;
-    }
-
-    // Get playable
-    public bool IsPlayable() {
-        return playable;
-    }
+    public bool isPlayable { get; set; }
 
     // Get resource costs
     public Dictionary<ResourceType, int> GetResourceCosts() {

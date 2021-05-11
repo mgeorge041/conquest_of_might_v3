@@ -6,7 +6,10 @@ using UnityEngine.EventSystems;
 
 public class MapObject : MonoBehaviour
 {
-    protected Map<Hex> map;
+    protected Map map;
+    protected GameMap gameMap;
+    protected ActionMap actionMap;
+    protected FogMap fogMap;
 
     public Tile defaultTile;
     public Tilemap tilemap;
@@ -16,7 +19,7 @@ public class MapObject : MonoBehaviour
     protected bool isOverTilemap = false;
 
     // Get map
-    public Map<Hex> GetMap() {
+    public Map GetMap() {
         return map;
     }
 

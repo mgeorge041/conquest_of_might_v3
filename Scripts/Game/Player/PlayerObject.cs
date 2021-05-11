@@ -76,7 +76,7 @@ public class PlayerObject : MonoBehaviour
         // Set camera centered over start
         playerCamera.SetTilemap(gameMapObject.tilemap);
         playerCamera.SetCameraBounds();
-        playerCamera.MoveCameraToPosition(gameMapObject.GetWorldCoordsFromTileCoords(player.GetStartTileCoords()));
+        playerCamera.MoveCameraToPosition(gameMapObject.GetWorldCoordsFromTileCoords(player.startTileCoords));
     }
 
     // Start turn
@@ -102,7 +102,7 @@ public class PlayerObject : MonoBehaviour
         
         // Update piece objects
         foreach (KeyValuePair<GamePiece, GamePieceObject> pair in gamePieceObjects) {
-            if (pair.Key.HasActions()) {
+            if (pair.Key.hasActions) {
                 pair.Value.ShowPieceDisabled();
             }
         }
@@ -136,13 +136,13 @@ public class PlayerObject : MonoBehaviour
 
     // Instantiate starting cards
     public void InstantiateStartingCards() {
-        List<CardPiece> cards = player.GetHand().GetCards();
+        List<CardPiece> cards = player.hand.cards;
         handObject.AddCards(cards);
     }
 
     // Instantiate player pieces
     public void InstantiateStartingPieces() {
-        List<GamePiece> pieces = player.GetPieces();
+        List<GamePiece> pieces = player.pieces;
         for (int i = 0; i < pieces.Count; i++) {
             GamePieceObject newPieceObject = GamePieceObject.InitializeFromGamePiece(pieces[i], gameMapObject.tilemap.transform, player.playerId);
             newPieceObject.SetPosition(gameMapObject);
@@ -176,7 +176,7 @@ public class PlayerObject : MonoBehaviour
         gamePieceObjects[piece].SetLifebarCurrentHealth();
 
         // Destroy piece object if dead
-        if (piece.GetCurrentHealth() == 0) {
+        if (piece.currentHealth == 0) {
             Destroy(gamePieceObjects[piece].gameObject);
             gamePieceObjects.Remove(piece);
         }
@@ -190,7 +190,7 @@ public class PlayerObject : MonoBehaviour
         PlayerObject playerObject = gameManagerObject.GetPlayerObject(targetPiece.GetPlayerId());
 
         // Attack piece
-        GamePiece attackingPiece = player.GetSelectedPiece();
+        GamePiece attackingPiece = player.selectedPiece;
         attackingPiece.AttackPiece(targetPiece);
 
         // Update the targeted piece lifebar
@@ -212,8 +212,8 @@ public class PlayerObject : MonoBehaviour
 
     // Update maps
     private void PaintPlayerMaps() {
-        fogMapObject.DrawFogMap(player.GetPieces());
-        actionMapObject.DrawActionMap(player.GetSelectedPiece(), gameMap, player.fogMap);
+        fogMapObject.DrawFogMap(player.pieces);
+        actionMapObject.DrawActionMap(player.selectedPiece, gameMap, player.fogMap);
     }
 
     // Move piece
@@ -221,7 +221,7 @@ public class PlayerObject : MonoBehaviour
         
         // Move piece
         gameMap.MovePiece(player.GetSelectedUnit(), targetTileCoords);
-        gamePieceObjects[player.GetSelectedPiece()].SetPosition(gameMapObject);
+        gamePieceObjects[player.selectedPiece].SetPosition(gameMapObject);
         
         // Update maps
         //player.UpdateMaps(gameMap);
@@ -237,7 +237,7 @@ public class PlayerObject : MonoBehaviour
 
     // Play selected card at location
     public void PlaySelectedCardAtTile(Vector3Int tileCoords) {
-        CardPiece selectedCard = player.GetSelectedCard();
+        CardPiece selectedCard = player.selectedCard;
         GamePiece newPiece = GamePiece.CreatePiece(selectedCard, player);
         gameMap.AddPiece(newPiece, tileCoords);
         CreateAndPositionPieceObject(newPiece);
@@ -297,7 +297,7 @@ public class PlayerObject : MonoBehaviour
             // Click on map tile
             if (tileCoords != null) {
                 GameHex gameHex = gameMap.GetHexAtTileCoords(tileCoords);
-                GamePiece piece = gameHex.GetPiece();
+                GamePiece piece = gameHex.piece;
                 Debug.Log("got piece: " + piece);
 
                 // Piece is on tile
@@ -308,12 +308,12 @@ public class PlayerObject : MonoBehaviour
                     if (piece.GetPlayerId() == player.playerId && player.isTurn) {
                         
                         // Piece is already selected
-                        if (piece == player.GetSelectedPiece()) {
+                        if (piece == player.selectedPiece) {
                             Debug.Log("piece is selected piece, clearing");
                             player.ClearSelectedPiece();
                             actionMapObject.PaintActionMap();
                         }
-                        else if (piece.HasActions()) {
+                        else if (piece.hasActions) {
                             Debug.Log("piece can move, creating map");
                             player.SetSelectedPiece(piece);
                             actionMapObject.PaintActionMap();
@@ -338,7 +338,7 @@ public class PlayerObject : MonoBehaviour
             if (tileCoords != null) {
 
                 // Play card from hand
-                if (player.HasSelectedCard() && player.actionMap.PlayableToTile(tileCoords)) {
+                if (player.hasSelectedCard && player.actionMap.PlayableToTile(tileCoords)) {
                     Debug.Log("playing selected card");
                     PlaySelectedCardAtTile(tileCoords);
                 }

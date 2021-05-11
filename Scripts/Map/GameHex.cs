@@ -5,8 +5,8 @@ using UnityEngine;
 public class GameHex : Hex
 {
     // Game piece and coords
-    private GamePiece piece;
-    private Vector3Int[] neighborHexCoords = new Vector3Int[6];
+    public GamePiece piece { get; set; }
+    public Vector3Int[] neighborHexCoords { get; } = new Vector3Int[6];
 
     private Vector3Int[] neighborCoords =
     {
@@ -37,21 +37,6 @@ public class GameHex : Hex
         return neighborHexCoords[neighborIndex];
     }
 
-    // Get hex piece
-    public GamePiece GetPiece() {
-        return piece;
-    }
-
-    // Set hex piece
-    public void SetPiece(GamePiece piece) {
-        this.piece = piece;
-    }
-
-    // Clear piece
-    public void ClearPiece() {
-        piece = null;
-    }
-
     // Get whether has piece
     public bool HasPiece() {
         if (piece != null) {
@@ -62,6 +47,6 @@ public class GameHex : Hex
 
     // Get whether piece can move
     public bool PieceCanMove() {
-        return piece.CanMove();
+        return piece.canMove;
     }
 }

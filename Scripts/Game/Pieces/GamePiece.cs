@@ -4,26 +4,49 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public abstract class GamePiece
+public abstract class GamePiece : MonoBehaviour
 {
-    protected int health;
-    protected int currentHealth;
-    protected int might;
-    protected int range;
-    protected int sightRange;
-    protected bool canAttack = false;
-    protected bool canMove = true;
-    protected Player player;
-    protected bool hasActions = true;
+    // Stats
+    public string pieceName { get; set; }
+    private int Health;
+    public int health {
+        get { return Health; }
+        set {
+            Health = value;
+            Sprite[] overlays = Resources.LoadAll<Sprite>("Art/Cards/Healthbar Overlay");
+            lifebarOverlay.sprite = overlays[value - 1];
+            SetCardLifebarOverlay(lifebarOverlay.sprite);
+        } 
+    }
+    public int currentHealth { get; set; }
+    public int might { get; set; }
+    public int range { get; set; }
+    public int sightRange { get; set; }
 
-    // Game object
-    private GamePieceObject gamePieceObject;
+    // Actions
+    public bool canAttack { get; set; } = false;
+    public bool canMove { get; set; } 
+    public bool hasActions { get; protected set; } = true;
+
+    public SpriteRenderer art;
+
+    // Lifebar
+    public Image lifebar;
+    public Image deathbar;
+    public Image lifebarOverlay;
+    public Transform pieceCanvas;
+    private const float MAX_HEALTHBAR_WIDTH = 0.64f;
+    private const float HEALTHBAR_HEIGHT = 0.1f;
 
     // Collider
     public PieceType pieceType;
+    public BoxCollider2D boxCollider;
+
+    // Player
+    public Player player { get; set; }
 
     // Game hex
-    protected GameHex gameHex;
+    public GameHex gameHex { get; set; }
 
     public abstract CardPiece GetCard();
 
@@ -46,36 +69,6 @@ public abstract class GamePiece
         return castlePiece;
     }
 
-    // Set game piece object
-    public void SetGamePieceObject(GamePieceObject gamePieceObject) {
-        this.gamePieceObject = gamePieceObject;
-    }
-
-    // Get game piece object
-    public GamePieceObject GetGamePieceObject() {
-        return gamePieceObject;
-    }
-
-    // Get game hex
-    public GameHex GetGameHex() {
-        return gameHex;
-    }
-
-    // Set game hex
-    public void SetGameHex(GameHex gameHex) {
-        this.gameHex = gameHex;
-    }
-
-    // Get player
-    public Player GetPlayer() {
-        return player;
-    }
-
-    // Set player
-    public void SetPlayer(Player player) {
-        this.player = player;
-    }
-
     // Get player ID
     public int GetPlayerId() {
         return player.playerId;
@@ -83,110 +76,203 @@ public abstract class GamePiece
 
     // Reset at beginning of turn
     public void ResetPiece() {
-        SetCanAttack(true);
-        SetCanMove(true);
+        canAttack = true;
+        canMove = true;
         CheckHasActions();
     }
 
     // End piece turn
     public void EndTurn() {
-        SetCanAttack(false);
-        SetCanMove(false);
+        canAttack = false;
+        canMove = false;
         CheckHasActions();
-    }
-
-    // Get whether piece has actions
-    public bool HasActions() {
-        return hasActions;
     }
 
     // Check whether piece has actions
     protected void CheckHasActions() {
         if (!canAttack && !canMove) {
             hasActions = false;
+            ShowPieceDisabled();
         }
         else {
             hasActions = true;
+            ShowPieceDisabled();
         }
     }
 
-    // Set whether piece can attack
-    public void SetCanAttack(bool canAttack) {
-        this.canAttack = canAttack;
-    }
-
-    // Get whether piece can attack
-    public bool CanAttack() {
-        return canAttack;
-    }
-
     // Attack piece
-    public void AttackPiece(GamePiece targetPiece) {
-        int damageGiven = targetPiece.TakeDamage(targetPiece.GetMight());
-        player.GetPlayerGameData().AddDamageGiven(damageGiven);
-        player.ClearSelectedPiece();
+    public int AttackPiece(GamePiece targetPiece) {
+        int damageGiven = targetPiece.TakeDamage(might);
+        //player.GetPlayerGameData().AddDamageGiven(damageGiven);
+        //player.ClearSelectedPiece();
         EndTurn();
+        return damageGiven;
     }
 
     // Take damage
     public int TakeDamage(int damage) {
         int damageTaken = Math.Min(damage, currentHealth);
         currentHealth -= damageTaken;
-        player.GetPlayerGameData().AddDamageTaken(damageTaken);
-
-        // Remove piece if dead
-        if (currentHealth <= 0) {
-            gameHex.ClearPiece();
-            gameHex = null;
-            player.LostPiece(this);
-        }
+        //player.GetPlayerGameData().AddDamageTaken(damageTaken);
         return damageTaken;
     }
 
-    // Get health
-    public int GetHealth() {
-        return health;
-    }
-
-    // Get current health
-    public int GetCurrentHealth() {
-        return currentHealth;
-    }
-
-    // Get might
-    public int GetMight() {
-        return might;
-    }
-
-    // Set whether piece can move
-    public void SetCanMove(bool canMove) {
-        this.canMove = canMove;
-    }
-
-    // Get whether piece can move
-    public bool CanMove() {
-        if (pieceType == PieceType.Unit) {
-            return canMove;
-        }
-        return false;
-    }
-
-    // Get range
-    public int GetRange() {
-        return range;
-    }
-
-    // Get sight range
-    public int GetSightRange() {
-        return sightRange;
-    }
-
     // Set shared attributes
-    public void SetSharedInfo(CardPiece cardPiece) {
+    public void SetCardStats(CardPiece cardPiece) {
+
+        // Set stats
+        pieceName = cardPiece.cardName;
         health = cardPiece.health;
         currentHealth = health;
         might = cardPiece.might;
         range = cardPiece.range;
         sightRange = cardPiece.sightRange;
+
+        // Set artwork
+        art.sprite = cardPiece.artwork;
+        lifebarOverlay.sprite = cardPiece.lifebarOverlay;
+        SetCardLifebarOverlay(lifebarOverlay.sprite);
+
+        ResetPiece();
+    }
+
+
+
+
+    // Show piece as disabled
+    public void ShowPieceDisabled()
+    {
+        if (hasActions)
+        {
+            art.color = new Color(1, 1, 1);
+        }
+        else
+        {
+            art.color = new Color(0.5f, 0.5f, 0.5f);
+        }
+    }
+
+    // Set piece object position
+    public void SetPosition(GameMapObject gameMapObject)
+    {
+        Vector3Int tileCoords = Hex.HexToTileCoords(gameHex.hexCoords);
+        Vector3 tilePosition = gameMapObject.tileGrid.CellToWorld(tileCoords);
+        Vector3 newPosition = new Vector3(tilePosition.x, tilePosition.y, -1);
+        StartCoroutine(MoveOverTime(newPosition));
+        //transform.position = new Vector3(tilePosition.x, tilePosition.y, -1);
+    }
+
+    // Animate movement of piece
+    public IEnumerator AnimateMove(Vector3 newPosition)
+    {
+        while (transform.position != newPosition)
+        {
+            transform.position = Vector3.MoveTowards(transform.position, newPosition, 5 * Time.deltaTime);
+            yield return new WaitForEndOfFrame();
+        }
+    }
+
+    // Animate movement of piece
+    public IEnumerator MoveOverTime(Vector3 newPosition)
+    {
+        float elapsedTime = 0;
+        float seconds = 2;
+        Vector3 startingPos = transform.position;
+        while (elapsedTime < seconds)
+        {
+            transform.position = Vector3.Lerp(startingPos, newPosition, (elapsedTime / seconds));
+            elapsedTime += Time.deltaTime;
+            yield return new WaitForEndOfFrame();
+        }
+        transform.position = newPosition;
+    }
+
+    // Set the width of the lifebar for current health
+    public void SetLifebarCurrentHealth()
+    {
+        lifebar.fillAmount = (float)currentHealth / (float)health;
+    }
+
+    // Set the card display's healthbar
+    public void SetCardLifebarOverlay(Sprite lifebarOverlaySprite)
+    {
+        lifebarOverlay.sprite = lifebarOverlaySprite;
+        float overlayWidth = Math.Min((float)health / 10, MAX_HEALTHBAR_WIDTH);
+
+        // Set lifebar sizes
+        lifebarOverlay.rectTransform.sizeDelta = new Vector2(overlayWidth, HEALTHBAR_HEIGHT);
+        lifebar.rectTransform.sizeDelta = new Vector2(overlayWidth, HEALTHBAR_HEIGHT);
+        deathbar.rectTransform.sizeDelta = new Vector2(overlayWidth, HEALTHBAR_HEIGHT);
+
+        // Set lifebar position for smaller sprites
+        float spriteHeight = art.sprite.rect.height / 100;
+        Vector3 position = pieceCanvas.position;
+        pieceCanvas.localPosition = new Vector3(0, spriteHeight / 2, position.z);
+    }
+
+    // Get unit prefab
+    public static GamePieceObject GetUnitPrefab()
+    {
+        GamePieceObject gamePieceObject = Resources.Load<GamePieceObject>("Prefabs/Unit");
+        return gamePieceObject;
+    }
+
+    // Initialize from a card piece
+    public static GamePieceObject InitializeFromCardPiece(CardPiece cardPiece, Transform parentTransform, Player player)
+    {
+        if (cardPiece.cardType == CardType.Unit)
+        {
+            GamePieceObject newUnitObject = Instantiate(GetUnitPrefab(), parentTransform);
+            Unit newUnit = new Unit((CardUnit)cardPiece, player);
+            newUnitObject.SetPiece(newUnit);
+            return newUnitObject;
+        }
+        else if (cardPiece.cardType == CardType.Building)
+        {
+            GamePieceObject newBuildingObject = Instantiate(GetUnitPrefab(), parentTransform);
+            Building newBuilding = new Building((CardBuilding)cardPiece, player);
+            newBuildingObject.SetPiece(newBuilding);
+            return newBuildingObject;
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+    // Initialize from a game piece
+    public static GamePieceObject InitializeFromGamePiece(GamePiece piece, Transform parentTransform, int playerId)
+    {
+        CardPiece cardPiece = piece.GetCard();
+        if (cardPiece.cardType == CardType.Unit)
+        {
+            GamePieceObject newUnitObject = Instantiate(GetUnitPrefab(), parentTransform);
+            newUnitObject.SetPiece(piece);
+            //piece.gamePieceObject = newUnitObject;
+            return newUnitObject;
+        }
+        else if (cardPiece.cardType == CardType.Building)
+        {
+            GamePieceObject newBuildingObject = Instantiate(GetUnitPrefab(), parentTransform);
+            newBuildingObject.SetPiece(piece);
+            //piece.gamePieceObject = newBuildingObject;
+            return newBuildingObject;
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+    // Start is called before the first frame update
+    void Start()
+    {
+
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+
     }
 }

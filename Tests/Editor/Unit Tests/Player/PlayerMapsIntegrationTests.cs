@@ -4,10 +4,11 @@ using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
 
-namespace Tests
+namespace Tests.UTests.PlayerTests
 {
     public class PlayerMapsIntegrationTests
     {
+        /*
         // Create a player with a game map
         public static Player CreateTestPlayerWithGameMap() {
             GameMap gameMap = new GameMap();
@@ -42,5 +43,6 @@ namespace Tests
             Assert.IsTrue(player.HasSelectedPiece());
             Assert.IsFalse(player.HasSelectedCard());
         }
+        */
     }
 }

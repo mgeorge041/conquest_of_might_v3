@@ -1,7 +1,7 @@
-﻿public class EditorMap : Map<Hex>
+﻿public class EditorMap : Map
 {
     // Constructor
     public EditorMap() {
-        CreateMap();
+        CreateMap<Hex>();
     }
 }

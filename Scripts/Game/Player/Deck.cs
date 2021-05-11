@@ -4,10 +4,10 @@ using UnityEngine;
 
 public class Deck
 {
-    private int cardCount = 0;
+    public int cardCount { get; set; } = 0;
     readonly int maxCards = 60;
     public List<Card> mainDeck = new List<Card>();
-    private List<Card> backupDeck;
+    public List<Card> backupDeck { get; }
     public Transform cardCountLabel = null;
     public Transform drawButton = null;
 
@@ -28,6 +28,8 @@ public class Deck
         Shuffle();
     }
 
+    // Constructor for certain number of cards
+
     // This is for a custom deck initialization
     public Deck(Dictionary<Card, int> cardsInDeck) 
     {
@@ -39,11 +41,6 @@ public class Deck
         }
         backupDeck = new List<Card>(mainDeck);
         Shuffle();
-    }
-
-    // Get card count
-    public int GetCardCount() {
-        return cardCount;
     }
 
     // Add a card to the deck 

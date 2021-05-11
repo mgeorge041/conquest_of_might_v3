@@ -41,10 +41,12 @@ namespace Tests
 
 
         // Test create movement map tiles
+        /*
         [Test]
         public void MovementMapTilesCreated() {
             ActionMap movementMap = CreateMovementMap();
             FogMap fogMap = new FogMap();
+            
             GameMap gameMap = new GameMap();
 
             // Fake set piece on game map
@@ -80,6 +82,7 @@ namespace Tests
             movementMap.CreateActionMap(newPiece, gameMap, fogMap);
             Assert.IsTrue(movementMap.MoveableToTile(new Vector3Int(1, 0, 0)));
         }
+            */
 
         // A UnityTest behaves like a coroutine in Play Mode. In Edit Mode you can use
         // `yield return null;` to skip a frame.

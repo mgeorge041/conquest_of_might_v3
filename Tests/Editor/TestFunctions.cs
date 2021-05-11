@@ -12,7 +12,7 @@ public class TestFunctions
     {
         Object newObject = AssetDatabase.LoadAssetAtPath<Object>(assetPath);
         GameObject newGameObject = (GameObject)Object.Instantiate(newObject);
-        T newT = newGameObject.GetComponent<T>();
+        T newT = newGameObject.GetComponentInChildren<T>();
         return newT;
     }
 }

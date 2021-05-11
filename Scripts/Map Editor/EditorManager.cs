@@ -19,7 +19,7 @@ public class EditorManager : MonoBehaviour
     // Set text
     public void SetMapSizeText(float mapRadius) {
         labelText.text = "Map Size: " + mapRadius;
-        editorMapObject.editorMap.SetNewMapRadius((int)mapRadius);
+        editorMapObject.editorMap.mapRadius = (int)mapRadius;
     }
 
     // Update is called once per frame

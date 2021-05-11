@@ -5,7 +5,7 @@ using UnityEngine.EventSystems;
 
 public class MapTestScene : MonoBehaviour
 {
-    public Map<Hex> testMap;
+    public Map testMap;
     private int hightlightHexRange = 1; 
     private bool isHighlighted = false;
 
@@ -18,7 +18,7 @@ public class MapTestScene : MonoBehaviour
     // Highlight test map hexes in range
     public void HighlightHexesInRange(Vector3Int centerHexCoords, int range)
     {
-        testMap.HighlightHexesInRange(centerHexCoords, range);
+        testMap.HighlightHexesInRange<Hex>(centerHexCoords, range);
     }
 
     // Mouse clicks
@@ -26,12 +26,15 @@ public class MapTestScene : MonoBehaviour
     {
         if (!EventSystem.current.IsPointerOverGameObject())
         {
+            // Highlight hexes in range
             if (!isHighlighted)
             {
                 Vector3Int hexCoords = testMap.GetMouseHexCoords(Camera.main, Input.mousePosition);
                 HighlightHexesInRange(hexCoords, hightlightHexRange);
                 isHighlighted = true;
             }
+
+            // Dehighlight hexes
             else
             {
                 testMap.DehighlightHexes();

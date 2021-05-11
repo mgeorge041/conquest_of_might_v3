@@ -6,11 +6,8 @@ using UnityEngine;
 using UnityEngine.Tilemaps;
 using UnityEngine.EventSystems;
 
-public class GameMap : Map<GameHex>
+public class GameMap : Map
 {
-    // Coords and game hexes
-    private new Dictionary<Vector3Int, GameHex> hexCoordsDict = new Dictionary<Vector3Int, GameHex>();
-
     // Pieces
     private Dictionary<int, List<GamePiece>> pieces = new Dictionary<int, List<GamePiece>>();
 
@@ -24,103 +21,56 @@ public class GameMap : Map<GameHex>
         new Vector3Int(-1, 0, 1)
     };
 
-    // Constructor
-    public GameMap() {
-        CreateMap();
+    // Initalize
+    public new void Initialize()
+    {
+        InitializeVariables();
+        CreateMap<GameHex>();
+        PaintMap();
     }
 
     // Constructor with map size
     public GameMap(int mapRadius) {
         this.mapRadius = mapRadius;
         newMapRadius = mapRadius;
+        CreateMap<GameHex>();
+    }
+
+    // Create map
+    public void CreateMap()
+    {
+        CreateMap<GameHex>();
+    }
+
+    // Updates the map to a new size
+    public new void UpdateMapToRadius(int newRadius)
+    {
+        newMapRadius = newRadius;
         CreateMap();
+        DrawMap();
     }
 
     // Get hex from hex coords
     public new GameHex GetHexAtHexCoords(Vector3Int hexCoords) {
-        if (hexCoordsDict.ContainsKey(hexCoords)) {
-            return hexCoordsDict[hexCoords];
-        }
-        return null;
+        return (GameHex)base.GetHexAtHexCoords(hexCoords);
     }
 
     // Get hex from tile coords
     public new GameHex GetHexAtTileCoords(Vector3Int tileCoords) {
-        if (tileHexCoordsDict.ContainsKey(tileCoords)) {
-            return hexCoordsDict[tileHexCoordsDict[tileCoords]];
-        }
-        return null;
+        return (GameHex)base.GetHexAtTileCoords(tileCoords);
     }
-
-    // Get all editor tile outlines within a certain radius 
-    public List<GameHex> GetGameHexesInRange(Vector3Int centerHexCoords, int radius) {
-        List<GameHex> hexesInRange = new List<GameHex>();
-
-        for (int i = -radius; i <= radius; i++) {
-
-            // Get upper and lower bounds for map columns
-            int lowerBound = Math.Max(-i - radius, -radius);
-            int upperBound = Math.Min(radius, -i + radius);
-
-            for (int j = lowerBound; j <= upperBound; j++) {
-                int z = -i - j;
-                Vector3Int hexCoords = new Vector3Int(i, j, z) + centerHexCoords;
-                if (hexCoords != centerHexCoords) {
-                    if (hexCoordsDict.ContainsKey(hexCoords)) {
-                        hexesInRange.Add(hexCoordsDict[hexCoords]);
-                    }
-                }
-            }
-        }
-        return hexesInRange;
-    }
-
-    // Create a list of tiles for the map
-    /*
-    public new void CreateMap() {
-        // Go to the larger of the new and old radii
-        int radius = newMapRadius;
-        if (newMapRadius < mapRadius) {
-            radius = mapRadius;
-        }
-
-        // Draw the tilemap
-        for (int i = -radius; i <= radius; i++) {
-            // Get upper and lower bounds for map columns
-            int lowerBound = Math.Max(-i - radius, -radius);
-            int upperBound = Math.Min(radius, -i + radius);
-
-            for (int j = lowerBound; j <= upperBound; j++) {
-                // Get z coordinate
-                int z = -i - j;
-                Vector3Int newHexCoords = new Vector3Int(i, j, z);
-                Vector3Int newTileCoords = HexToTileCoords(newHexCoords);
-                int distance = GetDistanceToCenterHex(newHexCoords);
-
-                // Only add tiles in size range
-                if (distance <= newMapRadius && !hexCoordsDict.ContainsKey(newHexCoords)) {
-                    hexCoordsDict.Add(newHexCoords, new GameHex(Resources.Load<TileData>("Tiles/Default"), newHexCoords));
-                    tileHexCoordsDict.Add(newTileCoords, newHexCoords);
-                }
-            }
-        }
-
-        // Update new map size
-        mapRadius = newMapRadius;
-    }
-    */
 
     // Add a game piece to the map
-    public bool AddPiece(GamePiece piece, Vector3Int tileCoords) {
-        GameHex gameHex = GetHexAtTileCoords(tileCoords);
+    public bool AddPiece(GamePiece piece, Vector3Int hexCoords) {
+        GameHex gameHex = GetHexAtHexCoords(hexCoords);
         if (!gameHex.HasPiece()) {
 
             // Associate hex with piece
-            gameHex.SetPiece(piece);
-            piece.SetGameHex(gameHex);
+            gameHex.piece = piece;
+            piece.gameHex = gameHex;
 
             // Update lists
-            piece.GetPlayer().PlayPiece(piece);
+            //piece.player.PlayPiece(piece);
 
             return true;
         }
@@ -128,16 +78,29 @@ public class GameMap : Map<GameHex>
     }
 
     // Moves a piece on the map
-    public void MovePiece(Unit unit, Vector3Int targetTileCoords) {
-        GameHex currentHex = unit.GetGameHex();
-        GameHex targetHex = GetHexAtTileCoords(targetTileCoords);
+    public void MovePiece(Unit unit, Vector3Int targetHexCoords) {
+        GameHex currentHex = unit.gameHex;
+        GameHex targetHex = GetHexAtHexCoords(targetHexCoords);
 
         // Get distance traveled and update new hex
-        int distance = GetDistanceHexes(currentHex, targetHex);
+        int distance = Hex.GetDistanceHexes(currentHex, targetHex);
         unit.DecreaseSpeed(distance);
-        unit.SetGameHex(targetHex);
-        targetHex.SetPiece(unit);
-        currentHex.ClearPiece();
+        unit.gameHex = targetHex;
+        targetHex.piece = unit;
+        currentHex.piece = null;
+    }
+
+    // Attacks a piece on the map
+    public void AttackPiece(GamePiece attackingPiece, GamePiece targetPiece)
+    {
+        int damageGiven = attackingPiece.AttackPiece(targetPiece);
+        
+        // Target piece dies
+        if (targetPiece.currentHealth == 0)
+        {
+            targetPiece.gameHex.piece = null;
+            C.Destroy(targetPiece.gameObject);
+        }
     }
 
     // Determine if hex has piece
@@ -147,11 +110,24 @@ public class GameMap : Map<GameHex>
 
     // Get hex piece
     public GamePiece GetHexPiece(Vector3Int hexCoords) {
-        return GetHexAtHexCoords(hexCoords).GetPiece();
+        return GetHexAtHexCoords(hexCoords).piece;
     }
 
     // Determine if can play on hex
-    public bool CanPlayOnHex(Vector3Int tileCoords) {
-        return !GetHexAtTileCoords(tileCoords).HasPiece();
+    public bool CanPlayOnHex(Vector3Int hexCoords) {
+        return !GetHexAtHexCoords(hexCoords).HasPiece();
+    }
+
+    // Awake
+    public void Awake()
+    {
+        Initialize();
+    }
+
+    // Start
+    public void Start()
+    {
+        Debug.Log("starting game map");
+        //Initialize();
     }
 }

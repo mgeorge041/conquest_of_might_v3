@@ -5,8 +5,8 @@ using UnityEngine;
 public class PlayerGameData
 {
     // Drawn and played cards
-    public int numDrawnCards;
-    public int numPlayedCards;
+    public int numDrawnCards { get; private set; }
+    public int numPlayedCards { get; private set; }
     public Dictionary<CardType, int> drawnCardTypes = new Dictionary<CardType, int>(){
         {CardType.Unit, 0 },
         {CardType.Building, 0 },
@@ -31,11 +31,6 @@ public class PlayerGameData
         {Race.Undead, 0 },
         {Race.None, 0 }
     };
-
-    // Damage data
-    public int piecesDefeated;
-    public int damageGiven;
-    public int damageTaken;
     public Dictionary<Race, int> playedPieceRaces = new Dictionary<Race, int>() {
         {Race.Human, 0 },
         {Race.Forest, 0 },
@@ -43,6 +38,11 @@ public class PlayerGameData
         {Race.Undead, 0 },
         {Race.None, 0 }
     };
+
+    // Damage data
+    public int numPiecesDefeated { get; private set; } = 0;
+    public int damageGiven { get; private set; } = 0;
+    public int damageTaken { get; private set; } = 0;
 
     // Resource data
     public Dictionary<ResourceType, int> drawnResources = new Dictionary<ResourceType, int>() {
@@ -55,6 +55,9 @@ public class PlayerGameData
         {ResourceType.Wood, 0 },
         {ResourceType.Mana, 0 }
     };
+
+    // Constructor
+    public PlayerGameData() { }
 
     // Add drawn card data
     public void AddDrawnCard(Card card) {
@@ -77,7 +80,7 @@ public class PlayerGameData
 
     // Add defeated piece
     public void AddPiecesDefeated(int piecesDefeated) {
-        this.piecesDefeated += piecesDefeated;
+        numPiecesDefeated += piecesDefeated;
     }
 
     // Add damage given
@@ -94,7 +97,4 @@ public class PlayerGameData
     public void AddCollectedResource(ResourceType collectedResource) {
         collectedResources[collectedResource]++;
     }
-
-    // Constructor
-    public PlayerGameData() { }
 }

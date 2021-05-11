@@ -3,21 +3,21 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
-public class FogMap : Map<Hex>
+public class FogMap : Map
 {
 
     private List<Vector3Int> visibleTileCoords = new List<Vector3Int>();
 
     // Constructor
     public FogMap() {
-        CreateMap();
+        CreateMap<Hex>();
     }
 
     // Constructor with map size
     public FogMap(int mapRadius) {
         this.mapRadius = mapRadius;
         newMapRadius = mapRadius;
-        CreateMap();
+        CreateMap<Hex>();
     }
 
     // Get visible tiles
@@ -33,12 +33,12 @@ public class FogMap : Map<Hex>
     // Get visible tiles in sight range
     public void GetVisibleTilesForPieces(List<GamePiece> pieces) {
         for (int i = 0; i < pieces.Count; i++) {
-            Vector3Int pieceHexCoords = pieces[i].GetGameHex().GetHexCoords();
+            Vector3Int pieceHexCoords = pieces[i].gameHex.hexCoords;
 
             // Get all tiles within sight range
-            List<Hex> visibleHexes = GetHexesInRange(pieceHexCoords, pieces[i].GetCard().sightRange, true);
+            List<Hex> visibleHexes = GetHexesInRange<Hex>(pieceHexCoords, pieces[i].GetCard().sightRange, true);
             for (int j = 0; j < visibleHexes.Count; j++) {
-                visibleTileCoords.Add(visibleHexes[j].GetTileCoords());
+                visibleTileCoords.Add(visibleHexes[j].tileCoords);
             }
         }
     }

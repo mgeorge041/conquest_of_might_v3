@@ -32,9 +32,9 @@ namespace Tests
             // Confirm each player has castle
             for (int i = 0; i < 2; i++) {
                 Player player = gameManager.GetPlayer(i);
-                Assert.AreEqual(1, player.GetPieces().Count);
-                Assert.AreEqual("Castle", player.GetPieces()[0].GetCard().cardName);
-                Assert.AreEqual(player.GetStartTileCoords(), player.GetPieces()[0].GetGameHex().GetTileCoords());
+                Assert.AreEqual(1, player.pieces.Count);
+                Assert.AreEqual("Castle", player.pieces[0].GetCard().cardName);
+                Assert.AreEqual(player.startTileCoords, player.pieces[0].gameHex.tileCoords);
             }
             
         }

@@ -7,15 +7,15 @@ using UnityEngine.Tilemaps;
 public class Player
 {
     // Cards
-    private Hand hand;
-    private Deck deck;
-    private bool hasSelectedCard = false;
-    private CardPiece selectedCard;
-    private PlayerGameData gameData;
+    public Hand hand { get; set; }
+    public Deck deck { get; private set; }
+    public bool hasSelectedCard { get; private set; } = false;
+    public CardPiece selectedCard { get; private set; }
+    public PlayerGameData gameData { get; private set; }
 
     // Player variables
     public readonly int playerId;
-    private Vector3Int startTileCoords;
+    public Vector3Int startTileCoords { get; private set; }
     public bool isTurn;
 
     // Maps
@@ -27,8 +27,8 @@ public class Player
     private GameManager gameManager;
 
     // Pieces
-    private GamePiece selectedPiece;
-    private List<GamePiece> pieces = new List<GamePiece>();
+    public GamePiece selectedPiece { get; private set; }
+    public List<GamePiece> pieces { get; } = new List<GamePiece>();
 
     // Resources
     private Dictionary<ResourceType, int> resources;
@@ -41,8 +41,8 @@ public class Player
         this.startTileCoords = startTileCoords;
 
         // Maps
-        actionMap = new ActionMap(GameSetupData.mapRadius);
-        fogMap = new FogMap(GameSetupData.mapRadius);
+        //actionMap = new ActionMap(GameSetupData.mapRadius);
+        //fogMap = new FogMap(GameSetupData.mapRadius);
 
         Initialize();
     }
@@ -103,8 +103,8 @@ public class Player
         gameData = new PlayerGameData();
         CreateHandAndDeck();
         CreateResourceCounts();
-        actionMap = new ActionMap();
-        fogMap = new FogMap();
+        //actionMap = new ActionMap();
+        //fogMap = new FogMap();
     }
 
     // Initialize game setup
@@ -136,11 +136,6 @@ public class Player
             pieces[i].EndTurn();
         }
         gameManager.NextTurn();
-    }
-
-    // Get game data
-    public PlayerGameData GetPlayerGameData() {
-        return gameData;
     }
 
     // Decrements played card resources
@@ -183,29 +178,9 @@ public class Player
         return resources;
     }
 
-    // Get start tile coords
-    public Vector3Int GetStartTileCoords() {
-        return startTileCoords;
-    }
-
-    // Set hand
-    public void SetHand(Hand hand) {
-        this.hand = hand;
-    }
-
-    // Get hand
-    public Hand GetHand() {
-        return hand;
-    }
-
-    // Get deck
-    public Deck GetDeck() {
-        return deck;
-    }
-
     // Get deck size
     public int GetDeckSize() {
-        return deck.GetCardCount();
+        return deck.cardCount;
     }
 
     // Draw card
@@ -220,11 +195,6 @@ public class Player
     public void DrawCard(Card drawnCard) {
         gameData.AddDrawnCard(drawnCard);
         hand.AddCard(drawnCard);
-    }
-
-    // Get selected card
-    public CardPiece GetSelectedCard() {
-        return selectedCard;
     }
 
     // Set selected card
@@ -244,16 +214,6 @@ public class Player
         }
     }
 
-    // Get whether has selected card
-    public bool HasSelectedCard() {
-        return hasSelectedCard;
-    }
-
-    // Get selected piece
-    public GamePiece GetSelectedPiece() {
-        return selectedPiece;
-    }
-
     // Set selected piece
     public void SetSelectedPiece(GamePiece piece) {
         selectedPiece = piece;
@@ -267,11 +227,6 @@ public class Player
     public void ClearSelectedPiece() {
         selectedPiece = null;
         actionMap.ClearActionTiles();
-    }
-
-    // Get all pieces
-    public List<GamePiece> GetPieces() {
-        return pieces;
     }
 
     // Get selected unit
