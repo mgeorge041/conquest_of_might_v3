@@ -74,8 +74,8 @@ public class PlayerObject : MonoBehaviour
         InstantiateStartingCards();
 
         // Set camera centered over start
-        playerCamera.SetTilemap(gameMapObject.tilemap);
-        playerCamera.SetCameraBounds();
+        playerCamera.tilemap = gameMapObject.tilemap;
+        playerCamera.UpdateCameraBounds();
         playerCamera.MoveCameraToPosition(gameMapObject.GetWorldCoordsFromTileCoords(player.startTileCoords));
     }
 
@@ -286,7 +286,7 @@ public class PlayerObject : MonoBehaviour
     }
 
     // Update is called once per frame
-    void Update() {
+    public void Update() {
 
         // Get map tile when click on map
         if (Input.GetMouseButtonDown(0) && !EventSystem.current.IsPointerOverGameObject()) {

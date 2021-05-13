@@ -16,82 +16,130 @@ public class MapCamera : MonoBehaviour
     float minXPos;
     float maxYPos;
     float minYPos;
-    public Tilemap tilemap;
+    private Tilemap _tilemap;
+    public Tilemap tilemap
+    {
+        get { return _tilemap; }
+        set { 
+            _tilemap = value;
+            UpdateCameraBounds();
+        }
+    }
     public Camera camera;
+    private bool isScrollDrag = false;
     private Vector3 oldScrollClickPosition;
-    private bool scrollDrag = false;
     public GameObject uiPanel;
     public int uiPixelWidth;
     public int uiPixelHeight;
 
     // Centers camera on position
     public void MoveCameraToPosition(Vector3 newPosition) {
+        //transform.position = new Vector3(Mathf.Clamp(newPosition.x, minXPos, maxXPos),
+        //        Mathf.Clamp(newPosition.y, minYPos, maxYPos), -10);
         transform.position = new Vector3(Mathf.Clamp(newPosition.x, minXPos, maxXPos),
                 Mathf.Clamp(newPosition.y, minYPos, maxYPos), -10);
     }
 
-    //Checks for user input for camera movement across board
+    // Centers camera on position
+    public void MoveCameraToPosition(float xPos, float yPos)
+    {
+        transform.position = new Vector3(Mathf.Clamp(xPos, minXPos, maxXPos),
+                Mathf.Clamp(yPos, minYPos, maxYPos), -10);
+    }
+
+    // Move camera based on distance
+    public void MoveCameraByDistance(float xDist, float yDist)
+    {
+        MoveCameraToPosition(transform.position.x + xDist, transform.position.y + yDist);
+    }
+
+    // Zoom camera in or out
+    public void Zoom(float moveZ)
+    {
+        float newZoom = camera.orthographicSize - moveZ * scrollSpeed;
+        camera.orthographicSize = Mathf.Clamp(newZoom, minZoom, maxZoom);
+    }
+
+    // Checks for user input for camera movement across board
     public void CameraMove()
     {
-        //Camera movement variables
+        // Check for zoom
         float moveZ = Input.mouseScrollDelta.y;
-
-        //Zooms camera in and out
-        if (!EventSystem.current.IsPointerOverGameObject())
+        if (!EventSystem.current.IsPointerOverGameObject() && moveZ != 0)
         {
-            if (moveZ != 0)
-            {
-                float newZoom = camera.orthographicSize - moveZ * scrollSpeed;
-                camera.orthographicSize = Mathf.Clamp(newZoom, minZoom, maxZoom);
-                SetCameraBounds();
-            }
+            Zoom(moveZ);
+            UpdateCameraBounds();
         }
 
-        // Moves camera via scroll wheel clicks
-        if (Input.GetMouseButtonDown(2)) {
-            scrollDrag = true;
+        // Check for camera move via arrow keys
+        float moveX = Input.GetAxis("Horizontal");
+        float moveY = Input.GetAxis("Vertical");
+        float xDist = moveX * moveSpeed * Time.fixedDeltaTime;
+        float yDist = moveY * moveSpeed * Time.fixedDeltaTime;
+        MoveCameraByDistance(xDist, yDist);
+
+        // Check for panning camera
+        if (Input.GetMouseButtonDown(2))
+        {
+            // Get initial position
             oldScrollClickPosition = camera.ScreenToWorldPoint(Input.mousePosition);
+            isScrollDrag = true;
+            Debug.Log("scroll drag");
         }
-
-        // Dragging with mouse scroll wheel click
-        if (scrollDrag) {
+        if (isScrollDrag) { 
+            
 
             // Get new mouse location and distance
             Vector3 newScrollClickPosition = camera.ScreenToWorldPoint(Input.mousePosition);
             Vector3 dist = -(newScrollClickPosition - oldScrollClickPosition);
-            
-            // Set camera position and update old position
-            transform.position = new Vector3(Mathf.Clamp(transform.position.x + dist.x, minXPos, maxXPos),
-                Mathf.Clamp(transform.position.y + dist.y, minYPos, maxYPos), -10);
+            MoveCameraToPosition(new Vector3(transform.position.x + dist.x, transform.position.y + dist.y));
+
+            // Update position
             oldScrollClickPosition = camera.ScreenToWorldPoint(Input.mousePosition);
         }
-
-        // Release mouse scroll wheel click
-        if (Input.GetMouseButtonUp(2)) {
-            scrollDrag = false;
-        }
-            
-        //Moves camera via arrow keys
-        float moveX = Input.GetAxis("Horizontal");
-        float moveY = Input.GetAxis("Vertical");
-        if (moveX != 0 || moveY != 0)
+        if (Input.GetMouseButtonUp(2))
         {
-            float xDist = moveX * moveSpeed * Time.fixedDeltaTime;
-            float yDist = moveY * moveSpeed * Time.fixedDeltaTime;
-            transform.position = new Vector3(Mathf.Clamp(transform.position.x + xDist, minXPos, maxXPos), 
-                Mathf.Clamp(transform.position.y + yDist, minYPos, maxYPos), -10);
+            isScrollDrag = false;
         }
     }
 
-    // Get size of map grid
-    public void SetCameraBounds()
+    // Set camera bounds
+    public void SetCameraBounds(Vector4 bounds)
+    {
+        SetCameraXBounds(bounds.x, bounds.y);
+        SetCameraYBounds(bounds.z, bounds.w);
+    }
+
+    // Set camera bounds
+    public void SetCameraBounds(float minX, float maxX, float minY, float maxY)
+    {
+        SetCameraXBounds(minX, maxX);
+        SetCameraYBounds(minY, maxY);
+    }
+
+    // Set camera X bounds
+    public void SetCameraXBounds(float minX, float maxX)
+    {
+        minXPos = minX;
+        maxXPos = maxX;
+    }
+
+    // Set camera Y bounds
+    public void SetCameraYBounds(float minY, float maxY)
+    {
+        minYPos = minY;
+        maxYPos = maxY;
+    }
+
+    // Calculate camera bounds from tilemap
+    public Vector4 CalculateCameraBounds()
     {
         // Current map dimensions
         float tilemapMax = tilemap.cellBounds.max[0];
         float tileHeight = tilemap.layoutGrid.cellSize.x;
         float tileWidth = tilemap.layoutGrid.cellSize.y;
         float currentZoom = camera.orthographicSize;
-        
+
         // Calculate map dimensions
         float tilemapHeight = tilemapMax * tileHeight;
         float tilemapWidth = (tilemapMax + (tilemapMax - 1) / 2) * tileWidth;
@@ -107,39 +155,50 @@ public class MapCamera : MonoBehaviour
         float mapMid = (0.5f - uncoveredRatio / 2) * cameraWidth;
         float uiVerticalRatio = uiPixelHeight / 100;
 
+        float minX;
+        float minY;
+        float maxX;
+        float maxY;
+
         // Set min and max positions
-        if (tilemapHeight * 2 < Screen.height / 100) {
-            maxYPos = 0;
-            minYPos = 0;
+        if (tilemapHeight * 2 < Screen.height / 100)
+        {
+            minY = 0;
+            maxY = 0;
         }
-        else {
-            maxYPos = Math.Max(tilemapHeight - currentZoom, 0);
-            minYPos = -maxYPos - uiVerticalRatio;
+        else
+        {
+            maxY  = Math.Max(tilemapHeight - currentZoom, 0);
+            minY = -maxY - uiVerticalRatio;
         }
 
-        if (uncoveredScreen > tilemapWidth) {
-            maxXPos = mapMid;
-            minXPos = mapMid;
+        if (uncoveredScreen > tilemapWidth)
+        {
+            minX = mapMid;
+            maxX = mapMid;
         }
-        else {
+        else
+        {
             // This is for UI that covers part of the screen
-            maxXPos = Math.Max(tilemapHalfWidth - halfCameraWidth + uiHorizontalRatio * cameraWidth, 0);
-            minXPos = -(tilemapHalfWidth - halfCameraWidth);
+            maxX = Math.Max(tilemapHalfWidth - halfCameraWidth + uiHorizontalRatio * cameraWidth, 0);
+            minX = -(tilemapHalfWidth - halfCameraWidth);
             //maxXPos = Math.Max(tilemapHalfWidth - halfCameraWidth, 0);
             //minXPos = Math.Min(-(tilemapHalfWidth - halfCameraWidth), 0);
-            if (minXPos > maxXPos) {
-                minXPos = maxXPos;
+            if (minX > maxX)
+            {
+                minX = maxX;
             }
         }
 
-        // Set camera position
-        transform.position = new Vector3(Mathf.Clamp(transform.position.x, minXPos, maxXPos),
-                Mathf.Clamp(transform.position.y, minYPos, maxYPos), -10);
+        return new Vector4(minX, maxX, minY, maxY);
     }
 
-    // Set tilemap
-    public void SetTilemap(Tilemap tilemap) {
-        this.tilemap = tilemap;
+    // Get size of map grid
+    public void UpdateCameraBounds()
+    {
+        Vector4 newCameraBounds = CalculateCameraBounds();
+        SetCameraBounds(newCameraBounds);
+        MoveCameraToPosition(transform.position);
     }
 
     // Start is called before the first frame update
@@ -152,7 +211,7 @@ public class MapCamera : MonoBehaviour
         camera.orthographicSize = defaultZoom;
 
         // Get tilemap bounds
-        SetCameraBounds();
+        UpdateCameraBounds();
     }
 
     // Update is called once per frame

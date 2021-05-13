@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
-public class Player
+public class Player : MonoBehaviour
 {
     // Cards
     public Hand hand { get; set; }
@@ -14,21 +14,22 @@ public class Player
     public PlayerGameData gameData { get; private set; }
 
     // Player variables
-    public readonly int playerId;
+    public int playerId { get; private set; }
     public Vector3Int startTileCoords { get; private set; }
     public bool isTurn;
 
     // Maps
     public GameMap gameMap;
-    public ActionMap actionMap;
+    public ActionMap actionMap { get; set; }
     public FogMap fogMap;
 
     // Game manager
+    public PlayerObject playerObject;
     private GameManager gameManager;
 
     // Pieces
     public GamePiece selectedPiece { get; private set; }
-    public List<GamePiece> pieces { get; } = new List<GamePiece>();
+    public List<GamePiece> pieces { get; private set; }
 
     // Resources
     private Dictionary<ResourceType, int> resources;
@@ -76,6 +77,32 @@ public class Player
         Initialize();
     }
 
+    // Initialize starting setup
+    public void Initialize()
+    {
+        gameData = new PlayerGameData();
+        pieces = new List<GamePiece>();
+        CreateHandAndDeck();
+        CreateResourceCounts();
+        actionMap = new ActionMap();
+        //fogMap = new FogMap();
+    }
+
+    // Initialize player
+    public void InitializeObject(int playerId, Vector3Int startTileCoords)
+    {
+        // Player items
+        this.playerId = playerId;
+        this.startTileCoords = startTileCoords;
+        Initialize();
+    }
+
+    // Update
+    public void Update()
+    {
+        playerObject.Update();
+    }
+
     // Initialize hand and deck
     private void CreateHandAndDeck() {
         hand = new Hand(this);
@@ -96,15 +123,6 @@ public class Player
         for (int i = 0; i < 15; i++) {
             DrawTopCard();
         }
-    }
-
-    // Initialize starting setup
-    public void Initialize() {
-        gameData = new PlayerGameData();
-        CreateHandAndDeck();
-        CreateResourceCounts();
-        //actionMap = new ActionMap();
-        //fogMap = new FogMap();
     }
 
     // Initialize game setup
@@ -214,12 +232,37 @@ public class Player
         }
     }
 
+    // Get selected piece
+    public GamePiece GetSelectedPiece()
+    {
+        if (selectedPiece == null)
+            return null;
+        else if (selectedPiece.pieceType == PieceType.Unit)
+            return (Unit)selectedPiece;
+        else
+            return (Building)selectedPiece;
+    }
+
     // Set selected piece
     public void SetSelectedPiece(GamePiece piece) {
-        selectedPiece = piece;
+        if (piece == selectedPiece)
+        {
+            selectedPiece = null;
+        }
+        else
+        {
+            selectedPiece = piece;
+        }
         selectedCard = null;
-        if (piece != null) {
-            actionMap.CreateActionMap(piece, gameMap, fogMap);
+
+        // Update or clear action map
+        if (selectedPiece != null)
+        {
+            actionMap.CreateActionMap(piece, gameMap);
+        }
+        else
+        {
+            actionMap.ClearActionTiles();
         }
     }
 

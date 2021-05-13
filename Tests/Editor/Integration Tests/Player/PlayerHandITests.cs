@@ -3,23 +3,82 @@ using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
+using Tests.UTests.PlayerTests;
+using Tests.UTests.CardTests;
 
-public class PlayerHandITests
+namespace Tests.ITests.PlayerTests
 {
-    // A Test behaves as an ordinary method
-    [Test]
-    public void PlayerHandITestsSimplePasses()
+    public class PlayerHandITests
     {
-        // Use the Assert class to test conditions
-    }
+        private Player player;
+        private Hand hand;
+        private CardUnit cardUnit;
+        private CardBuilding cardBuilding;
+        private CardResource cardResource;
 
-    // A UnityTest behaves like a coroutine in Play Mode. In Edit Mode you can use
-    // `yield return null;` to skip a frame.
-    [UnityTest]
-    public IEnumerator PlayerHandITestsWithEnumeratorPasses()
-    {
-        // Use the Assert class to test conditions.
-        // Use yield to skip a frame.
-        yield return null;
+        // Create player with hand
+        public static Player CreateTestPlayerWithHand()
+        {
+            Player player = PlayerUTests.CreateTestPlayer();
+            Hand hand = HandUTests.CreateTestHand(player);
+            player.hand = hand;
+            return player;
+        }
+
+        // Setup
+        [SetUp]
+        public void Setup()
+        {
+            player = PlayerUTests.CreateTestPlayer();
+            hand = HandUTests.CreateTestHand(player);
+            player.hand = hand;
+            cardUnit = CardUnitUTests.CreateTestCardUnit();
+            cardBuilding = CardBuildingUTests.CreateTestCardBuilding();
+            cardResource = CardResourceUTests.CreateTestCardResource();
+        }
+
+        // End
+        [TearDown]
+        public void Teardown()
+        {
+            hand = null;
+            cardUnit = null;
+        }
+
+        // Test creates player with hand
+        [Test]
+        public void CreatesPlayerWithHand()
+        {
+            player = CreateTestPlayerWithHand();
+            Assert.IsNotNull(player);
+        }
+
+        // Test add card unit to hand
+        [Test]
+        public void AddsCardUnitToHand()
+        {
+            hand.AddCard(cardUnit);
+            Assert.AreEqual(1, hand.cards.Count);
+            Assert.IsFalse(cardUnit.isPlayable);
+        }
+
+        // Test add card building to hand
+        [Test]
+        public void AddsCardBuildingToHand()
+        {
+            hand.AddCard(cardBuilding);
+            Assert.AreEqual(1, hand.cards.Count);
+            Assert.IsFalse(cardUnit.isPlayable);
+        }
+
+        // Test add card resource to hand
+        [Test]
+        public void AddsCardResourceToHand()
+        {
+            hand.AddCard(cardResource);
+            Assert.AreEqual(0, hand.cards.Count);
+            Assert.AreEqual(1, player.GetResourceCount(ResourceType.Food));
+        }
+
     }
 }

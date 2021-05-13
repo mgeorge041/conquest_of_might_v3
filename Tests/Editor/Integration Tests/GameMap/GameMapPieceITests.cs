@@ -69,57 +69,5 @@ namespace Tests.ITests.MapTests
             GamePiece gotPiece = gameMap.GetHexPiece(hexCoords);
             Assert.AreEqual(unit1, gotPiece);
         }
-
-        // Test move piece
-        [Test]
-        public void MovesPiece1HexAway()
-        {
-            // Add piece
-            GameHex startingHex = gameMap.GetHexAtHexCoords(hexCoords);
-            gameMap.AddPiece(unit1, hexCoords);
-
-            // Move piece
-            GameHex targetHex = gameMap.GetHexAtHexCoords(targetHexCoords);
-            gameMap.MovePiece(unit1, targetHexCoords);
-
-            // Confirm piece is moved
-            Assert.IsNull(startingHex.piece);
-            Assert.AreEqual(unit1, targetHex.piece);
-            Assert.AreEqual(4, unit1.remainingSpeed);
-        }
-
-        // Test move piece 2 hexes away
-        [Test]
-        public void MovesPiece2HexesAway()
-        {
-            // Add piece
-            GameHex startingHex = gameMap.GetHexAtHexCoords(hexCoords);
-            gameMap.AddPiece(unit1, hexCoords);
-
-            // Move piece
-            targetHexCoords = new Vector3Int(2, -2, 0);
-            GameHex targetHex = gameMap.GetHexAtHexCoords(targetHexCoords);
-            gameMap.MovePiece(unit1, targetHexCoords);
-
-            // Confirm piece is moved
-            Assert.IsNull(startingHex.piece);
-            Assert.AreEqual(unit1, targetHex.piece);
-            Assert.AreEqual(3, unit1.remainingSpeed);
-        }
-
-        // Test kills piece
-        [Test]
-        public void AttacksAndKillsPiece()
-        {
-            gameMap.AddPiece(unit1, hexCoords);
-            gameMap.AddPiece(unit2, targetHexCoords);
-
-            // Confirm piece is attacked and dies
-            GameHex targetHex = gameMap.GetHexAtHexCoords(targetHexCoords);
-            gameMap.AttackPiece(unit1, unit2);
-            Assert.AreEqual(0, unit2.currentHealth);
-            Assert.IsNull(targetHex.piece);
-            Assert.IsTrue(unit2 == null);
-        }
     }
 }

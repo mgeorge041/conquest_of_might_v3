@@ -21,6 +21,12 @@ public class GameMap : Map
         new Vector3Int(-1, 0, 1)
     };
 
+    // Awake
+    public void Awake()
+    {
+        Initialize();
+    }
+
     // Initalize
     public new void Initialize()
     {
@@ -60,6 +66,29 @@ public class GameMap : Map
         return (GameHex)base.GetHexAtTileCoords(tileCoords);
     }
 
+    // Get hexes in unit range
+    public List<GameHex> GetHexesInUnitRange(Unit unit)
+    {
+        int totalRange = unit.remainingSpeed + unit.range;
+        return GetHexesInRange<GameHex>(unit.gameHex.hexCoords, totalRange);
+    }
+
+    // Get hexes in range
+    public List<GameHex> GetHexesInPieceRange(GamePiece piece)
+    {
+        int totalRange = 0;
+        if (piece.pieceType == PieceType.Unit)
+        {
+            Unit unit = (Unit)piece;
+            totalRange = unit.remainingSpeed + unit.range;
+        }
+        else if (piece.pieceType == PieceType.Building)
+        {
+            totalRange = piece.range;
+        }
+        return GetHexesInRange<GameHex>(piece.gameHex.hexCoords, totalRange);
+    }
+
     // Add a game piece to the map
     public bool AddPiece(GamePiece piece, Vector3Int hexCoords) {
         GameHex gameHex = GetHexAtHexCoords(hexCoords);
@@ -81,19 +110,47 @@ public class GameMap : Map
     public void MovePiece(Unit unit, Vector3Int targetHexCoords) {
         GameHex currentHex = unit.gameHex;
         GameHex targetHex = GetHexAtHexCoords(targetHexCoords);
+        if (targetHex.HasPiece())
+        {
+            return;
+        }
 
         // Get distance traveled and update new hex
         int distance = Hex.GetDistanceHexes(currentHex, targetHex);
-        unit.DecreaseSpeed(distance);
-        unit.gameHex = targetHex;
-        targetHex.piece = unit;
-        currentHex.piece = null;
+        if (distance <= unit.remainingSpeed)
+        {
+            unit.DecreaseSpeed(distance);
+            unit.gameHex = targetHex;
+            targetHex.piece = unit;
+            currentHex.piece = null;
+            unit.player.SetSelectedPiece(null);
+        }
     }
 
     // Attacks a piece on the map
     public void AttackPiece(GamePiece attackingPiece, GamePiece targetPiece)
     {
+        // Return if either piece is null
+        if (attackingPiece == null || targetPiece == null)
+        {
+            return;
+        }
+
+        // Return if both pieces belong to same player
+        if (attackingPiece.GetPlayerId() == targetPiece.GetPlayerId())
+        {
+            return;
+        }
+
+        // Return if out of range
+        int distance = Hex.GetDistanceHexes(attackingPiece.gameHex, targetPiece.gameHex);
+        if (distance > attackingPiece.range)
+        {
+            return;
+        }
+
         int damageGiven = attackingPiece.AttackPiece(targetPiece);
+        attackingPiece.player.SetSelectedPiece(null);
         
         // Target piece dies
         if (targetPiece.currentHealth == 0)
@@ -116,18 +173,5 @@ public class GameMap : Map
     // Determine if can play on hex
     public bool CanPlayOnHex(Vector3Int hexCoords) {
         return !GetHexAtHexCoords(hexCoords).HasPiece();
-    }
-
-    // Awake
-    public void Awake()
-    {
-        Initialize();
-    }
-
-    // Start
-    public void Start()
-    {
-        Debug.Log("starting game map");
-        //Initialize();
     }
 }

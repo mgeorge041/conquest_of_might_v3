@@ -304,6 +304,33 @@ public class Map : MonoBehaviour
         return GetHexCoordsFromTileCoords(tileCoords);
     }
 
+    // Get hex from mouse position
+    public T GetMouseHex<T>(Camera playerCamera, Vector3 mousePosition) where T : Hex
+    {
+        Vector3Int tileCoords = GetMouseTileCoords(playerCamera, mousePosition);
+        return (T)GetHexAtTileCoords(tileCoords);
+    }
+
+    // Get tilemap coordinates from world position
+    public Vector3Int GetWorldPositionTileCoords(Vector3 worldPosition)
+    {
+        return tileGrid.WorldToCell(worldPosition);
+    }
+
+    // Get hex coordinates from world position
+    public Vector3Int GetWorldPositionHexCoords(Vector3 worldPosition)
+    {
+        Vector3Int tileCoords = GetWorldPositionTileCoords(worldPosition);
+        return GetHexCoordsFromTileCoords(tileCoords);
+    }
+
+    // Get hex from world position
+    public T GetWorldPositionHex<T>(Vector3 worldPosition) where T : Hex
+    {
+        Vector3Int tileCoords = GetWorldPositionHexCoords(worldPosition);
+        return (T)GetHexAtTileCoords(tileCoords);
+    }
+
     // Get whether over a tilemap tile
     public bool MouseOverTile()
     {
@@ -314,11 +341,14 @@ public class Map : MonoBehaviour
     public void OnMouseDown()
     {
         Debug.Log("clicked mouse on tile: " + GetMouseHexCoords(playerCamera, Input.mousePosition));
+        Debug.Log("clicked mouse at mouse position: " + Input.mousePosition);
+        Debug.Log("clicked mouse at world point: " + playerCamera.ScreenToWorldPoint(Input.mousePosition));
     }
 
     // Mouse enters
     public void OnMouseEnter()
     {
+        Debug.Log("entered map");
         // Do nothing if over UI
         if (EventSystem.current.IsPointerOverGameObject())
         {
@@ -330,6 +360,7 @@ public class Map : MonoBehaviour
     // Mouse exits
     public void OnMouseExit()
     {
+        Debug.Log("exited map");
         // Do nothing if over UI
         if (EventSystem.current.IsPointerOverGameObject())
         {

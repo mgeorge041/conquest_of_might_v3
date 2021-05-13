@@ -104,7 +104,6 @@ public abstract class GamePiece : MonoBehaviour
     public int AttackPiece(GamePiece targetPiece) {
         int damageGiven = targetPiece.TakeDamage(might);
         //player.GetPlayerGameData().AddDamageGiven(damageGiven);
-        //player.ClearSelectedPiece();
         EndTurn();
         return damageGiven;
     }

@@ -4,25 +4,23 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
-public class ActionMap : Map
+public class ActionMap
 {
     public Tile movementTile;
     public Tile attackTile;
     public Tile playableTile;
-    private Dictionary<Vector3Int, Tile> paintedTiles = new Dictionary<Vector3Int, Tile>();
+    public Dictionary<Vector3Int, Tile> paintedTiles { get; private set; }
+    public List<Vector3Int> movementTiles { get; private set; }
+    public List<Vector3Int> attackTiles { get; private set; }
+    public List<Vector3Int> playableTiles { get; private set; }
 
     // Constructor
-    public ActionMap() {
-        CreateMap<Hex>();
-        SetMovementMapTiles();
-    }
-
-    // Constructor with map size
-    public ActionMap(int mapRadius) {
-        this.mapRadius = mapRadius;
-        newMapRadius = mapRadius;
-        CreateMap<Hex>();
-        SetMovementMapTiles();
+    public ActionMap() 
+    {
+        paintedTiles = new Dictionary<Vector3Int, Tile>();
+        movementTiles = new List<Vector3Int>();
+        attackTiles = new List<Vector3Int>();
+        playableTiles = new List<Vector3Int>();
     }
 
     // Get painted tiles
@@ -73,6 +71,46 @@ public class ActionMap : Map
     public void ClearActionTiles() {
         foreach (Vector3Int tileCoords in paintedTiles.Keys.ToList()) {
             paintedTiles[tileCoords] = null;
+        }
+        movementTiles.Clear();
+        attackTiles.Clear();
+        playableTiles.Clear();
+    }
+
+    // Create action map
+    public void CreateActionMap(GamePiece piece, GameMap gameMap)
+    {
+        ClearActionTiles();
+        if (piece == null)
+        {
+            return;
+        }
+        Vector3Int hexCoords = piece.gameHex.hexCoords;
+        List<GameHex> gameHexes = gameMap.GetHexesInPieceRange(piece);
+
+        if (piece.pieceType == PieceType.Unit)
+        {
+            Unit unit = (Unit)piece;
+            int remainingSpeed = unit.remainingSpeed;
+
+            // Get hexes in range of unit movement and set tiles
+            for (int i = 0; i < gameHexes.Count; i++)
+            {
+                GameHex gameHex = gameHexes[i];
+                int distance = Hex.GetDistanceHexCoords(hexCoords, gameHex.hexCoords);
+
+                // Set tile to appropriate movement tile type
+                if (!gameHex.HasPiece() && distance <= remainingSpeed)
+                {
+                    paintedTiles[gameHex.tileCoords] = movementTile;
+                    movementTiles.Add(gameHex.tileCoords);
+                }
+                else if (gameHex.HasPiece() && gameHex.piece.GetPlayerId() != unit.GetPlayerId())
+                {
+                    paintedTiles[gameHex.tileCoords] = attackTile;
+                    attackTiles.Add(gameHex.tileCoords);
+                }
+            }
         }
     }
 

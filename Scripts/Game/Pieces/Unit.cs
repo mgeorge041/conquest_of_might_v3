@@ -7,7 +7,7 @@ public class Unit : GamePiece
 {
     private CardUnit cardUnit;
     public int speed { get; private set; }
-    public int remainingSpeed { get; private set; }
+    public int remainingSpeed { get; set; }
 
     // Constructor for playerless unit
     public Unit(CardUnit cardUnit) {
