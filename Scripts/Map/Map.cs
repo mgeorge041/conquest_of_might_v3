@@ -28,13 +28,13 @@ public class Map : MonoBehaviour
     // Initialize
     public void Initialize()
     {
-        InitializeVariables();
-        CreateMap<Hex>();
+        InitializeVariables<Hex>();
+        CreateMap();
         PaintMap();
     }
 
     // Initialize variables
-    protected void InitializeVariables()
+    protected void InitializeVariables<T>() where T : Hex
     {
         isOverTilemap = false;
 
@@ -65,7 +65,8 @@ public class Map : MonoBehaviour
     }
 
     // Get hex from hex coords
-    public Hex GetHexAtHexCoords(Vector3Int hexCoords) {
+    public Hex GetHexAtHexCoords(Vector3Int hexCoords)
+    {
         if (hexCoordsDict.ContainsKey(hexCoords)) {
             return hexCoordsDict[hexCoords];
         }
@@ -73,20 +74,16 @@ public class Map : MonoBehaviour
     }
 
     // Get hex from tile coords
-    public Hex GetHexAtTileCoords(Vector3Int tileCoords) {
+    public Hex GetHexAtTileCoords(Vector3Int tileCoords) 
+    {
         if (tileHexCoordsDict.ContainsKey(tileCoords)) {
             return hexCoordsDict[tileHexCoordsDict[tileCoords]];
         }
         return null;
     }
 
-    // Get hex coords from tile coords
-    public Vector3Int GetHexCoordsFromTileCoords(Vector3Int tileCoords) {
-        return tileHexCoordsDict[tileCoords];
-    }
-
     // Get all hexes within a certain radius 
-    public List<T> GetHexesInRange<T>(Vector3Int centerHexCoords, int radius, bool includeCenter = false) {
+    public List<T> GetHexesInRange<T>(Dictionary<Vector3Int, T> hexCoordsDict, Vector3Int centerHexCoords, int radius, bool includeCenter = false) {
         List<T> hexesInRange = new List<T>();
 
         for (int i = -radius; i <= radius; i++) {
@@ -137,9 +134,9 @@ public class Map : MonoBehaviour
     }
 
     // Highlight all hexes with a certain radius
-    public void HighlightHexesInRange<T>(Vector3Int centerHexCoords, int radius) where T : Hex
+    public void HighlightHexesInRange<T>(Dictionary<Vector3Int, T> hexCoordsDict, Vector3Int centerHexCoords, int radius) where T : Hex
     {
-        List<T> hexesInRange = GetHexesInRange<T>(centerHexCoords, radius);
+        List<T> hexesInRange = GetHexesInRange(hexCoordsDict, centerHexCoords, radius);
         foreach (T hex in hexesInRange)
         {
             tilemap.SetTile(hex.tileCoords, highlightTile);
@@ -188,7 +185,7 @@ public class Map : MonoBehaviour
     public void UpdateMapToRadius(int newRadius)
     {
         newMapRadius = newRadius;
-        CreateMap<Hex>();
+        CreateMap();
         DrawMap();
     }
 
@@ -196,12 +193,18 @@ public class Map : MonoBehaviour
     public void UpdateMapToRadius(float newRadius)
     {
         newMapRadius = (int)newRadius;
-        CreateMap<Hex>();
+        CreateMap();
         DrawMap();
     }
 
-    // Create a list of tiles for the map
-    public void CreateMap<T>() where T : Hex
+    // Create a list of tile for the map
+    public void CreateMap()
+    {
+        CreateMap(hexCoordsDict);
+    }
+
+    // Create a list of tile for the map
+    public void CreateMap<T>(Dictionary<Vector3Int, T> hexCoordsDict) where T : Hex
     {
         removedTiles.Clear();
 
@@ -230,10 +233,11 @@ public class Map : MonoBehaviour
                 // Only add tiles in size range
                 if (distance <= newMapRadius && !hexCoordsDict.ContainsKey(newHexCoords))
                 {
-                    hexCoordsDict.Add(newHexCoords, Hex.CreateHex<T>(Resources.Load<TileData>("Assets/Resources/Tiles/Tile Data/Blue.asset"), newHexCoords)); ;
+                    hexCoordsDict.Add(newHexCoords, (T)Hex.CreateHex<T>(Resources.Load<TileData>(ENV.DEFAULT_TILE_RESOURCE_PATH), newHexCoords));
                     tileHexCoordsDict.Add(newTileCoords, newHexCoords);
                 }
-                else if (distance > newMapRadius) {
+                else if (distance > newMapRadius)
+                {
                     removedTiles.Add(newTileCoords);
                     hexCoordsDict.Remove(newHexCoords);
                     tileHexCoordsDict.Remove(newTileCoords);
@@ -286,49 +290,34 @@ public class Map : MonoBehaviour
     }
 
     // Get world coordinates from tilemap coordinates
-    public Vector3 GetWorldCoordsFromTileCoords(Vector3Int tileCoords)
+    public Vector3 TileToWorldCoords(Vector3Int tileCoords)
     {
         return tileGrid.CellToWorld(tileCoords);
     }
 
-    // Get tilemap coordinates from mouse position
-    public Vector3Int GetMouseTileCoords(Camera playerCamera, Vector3 mousePosition)
+    // Get world coordinates from hex coordinates
+    public Vector3 HexToWorldCoords(Vector3Int hexCoords)
     {
-        return tileGrid.WorldToCell(playerCamera.ScreenToWorldPoint(mousePosition));
+        return tileGrid.CellToWorld(Hex.HexToTileCoords(hexCoords));
     }
 
-    // Get hex coordinates from mouse position
-    public Vector3Int GetMouseHexCoords(Camera playerCamera, Vector3 mousePosition)
+    // Get tile coordinates from world coordinates
+    public Vector3Int WorldToTileCoords(Vector3 worldCoords)
     {
-        Vector3Int tileCoords = GetMouseTileCoords(playerCamera, mousePosition);
-        return GetHexCoordsFromTileCoords(tileCoords);
+        return tileGrid.WorldToCell(worldCoords);
     }
 
-    // Get hex from mouse position
-    public T GetMouseHex<T>(Camera playerCamera, Vector3 mousePosition) where T : Hex
+    // Get hex coordinates from world coordinates
+    public Vector3Int WorldToHexCoords(Vector3 worldCoords)
     {
-        Vector3Int tileCoords = GetMouseTileCoords(playerCamera, mousePosition);
-        return (T)GetHexAtTileCoords(tileCoords);
-    }
-
-    // Get tilemap coordinates from world position
-    public Vector3Int GetWorldPositionTileCoords(Vector3 worldPosition)
-    {
-        return tileGrid.WorldToCell(worldPosition);
-    }
-
-    // Get hex coordinates from world position
-    public Vector3Int GetWorldPositionHexCoords(Vector3 worldPosition)
-    {
-        Vector3Int tileCoords = GetWorldPositionTileCoords(worldPosition);
-        return GetHexCoordsFromTileCoords(tileCoords);
+        return Hex.TileToHexCoords(tileGrid.WorldToCell(worldCoords));
     }
 
     // Get hex from world position
-    public T GetWorldPositionHex<T>(Vector3 worldPosition) where T : Hex
+    public Hex GetWorldPositionHex(Vector3 worldPosition)
     {
-        Vector3Int tileCoords = GetWorldPositionHexCoords(worldPosition);
-        return (T)GetHexAtTileCoords(tileCoords);
+        Vector3Int tileCoords = WorldToTileCoords(worldPosition);
+        return GetHexAtTileCoords(tileCoords);
     }
 
     // Get whether over a tilemap tile
@@ -340,15 +329,14 @@ public class Map : MonoBehaviour
     // Mouse clicks
     public void OnMouseDown()
     {
-        Debug.Log("clicked mouse on tile: " + GetMouseHexCoords(playerCamera, Input.mousePosition));
+        //Debug.Log("clicked mouse on tile: " + WorldToHexCoords(playerCamera.ScreenToWorldPoint(Input.mousePosition)));
         Debug.Log("clicked mouse at mouse position: " + Input.mousePosition);
-        Debug.Log("clicked mouse at world point: " + playerCamera.ScreenToWorldPoint(Input.mousePosition));
+        //Debug.Log("clicked mouse at world point: " + playerCamera.ScreenToWorldPoint(Input.mousePosition));
     }
 
     // Mouse enters
     public void OnMouseEnter()
     {
-        Debug.Log("entered map");
         // Do nothing if over UI
         if (EventSystem.current.IsPointerOverGameObject())
         {
@@ -360,7 +348,6 @@ public class Map : MonoBehaviour
     // Mouse exits
     public void OnMouseExit()
     {
-        Debug.Log("exited map");
         // Do nothing if over UI
         if (EventSystem.current.IsPointerOverGameObject())
         {

@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
+using UnityEngine.EventSystems;
 
 public class Player : MonoBehaviour
 {
@@ -20,8 +21,12 @@ public class Player : MonoBehaviour
 
     // Maps
     public GameMap gameMap;
-    public ActionMap actionMap { get; set; }
+    public ActionMap actionMap;
     public FogMap fogMap;
+    public MapCamera playerCamera;
+
+    // UI
+    public PlayerUI playerUI;
 
     // Game manager
     public PlayerObject playerObject;
@@ -32,7 +37,7 @@ public class Player : MonoBehaviour
     public List<GamePiece> pieces { get; private set; }
 
     // Resources
-    private Dictionary<ResourceType, int> resources;
+    public Dictionary<ResourceType, int> resources { get; private set; }
 
     // Constructor
     public Player(int playerId, Vector3Int startTileCoords) {
@@ -84,7 +89,6 @@ public class Player : MonoBehaviour
         pieces = new List<GamePiece>();
         CreateHandAndDeck();
         CreateResourceCounts();
-        actionMap = new ActionMap();
         //fogMap = new FogMap();
     }
 
@@ -95,12 +99,6 @@ public class Player : MonoBehaviour
         this.playerId = playerId;
         this.startTileCoords = startTileCoords;
         Initialize();
-    }
-
-    // Update
-    public void Update()
-    {
-        playerObject.Update();
     }
 
     // Initialize hand and deck
@@ -254,16 +252,6 @@ public class Player : MonoBehaviour
             selectedPiece = piece;
         }
         selectedCard = null;
-
-        // Update or clear action map
-        if (selectedPiece != null)
-        {
-            actionMap.CreateActionMap(piece, gameMap);
-        }
-        else
-        {
-            actionMap.ClearActionTiles();
-        }
     }
 
     // Clear selected piece
@@ -318,6 +306,89 @@ public class Player : MonoBehaviour
         fogMap.CreateFogMap(pieces);
         if (piece.GetCard().cardName == "Castle") {
             gameManager.EndGame();
+        }
+    }
+
+    // Player left clicks
+    public void PlayerLeftClicksAtWorldPosition(Vector3 worldPosition)
+    {
+        // Get piece from click
+        GamePiece piece = gameMap.GetHexPieceFromWorldPosition(worldPosition);
+
+        // Return if piece is enemy or piece has no actions
+        if (piece && (piece.GetPlayerId() != playerId || !piece.hasActions))
+        {
+            return;
+        }
+
+        SetSelectedPiece(piece);
+
+        // Return if selected piece is null
+        if (!selectedPiece)
+        {
+            actionMap.ClearActionTiles();
+            return;
+        }
+
+        // Update map for piece
+        if (selectedPiece.hasActions)
+        {
+            Debug.Log("Creating action map");
+            actionMap.CreateActionMap(piece, gameMap);
+        }
+    }
+
+    // Player right clicks
+    public void PlayerRightClicksAtWorldPosition(Vector3 worldPosition)
+    {
+        // Return if no selected piece
+        if (!selectedPiece)
+        {
+            return;
+        }
+
+        // Get clicked on hex
+        GameHex targetHex = gameMap.GetWorldPositionHex(worldPosition);
+        if (targetHex == null)
+        {
+            return;
+        }
+
+        // Move or attack piece
+        if (actionMap.MoveableToTileAtTileCoords(targetHex.tileCoords))
+        {
+            gameMap.MovePiece((Unit)selectedPiece, targetHex.hexCoords);
+            actionMap.ClearActionTiles();
+            return;
+        }
+        if (actionMap.AttackableTileAtTileCoords(targetHex.tileCoords))
+        {
+            gameMap.AttackPiece(selectedPiece, targetHex.piece);
+            actionMap.ClearActionTiles();
+            return;
+        }
+    }
+
+    // Start
+    public void Start()
+    {
+        Initialize();
+    }
+
+    // Update
+    public void Update()
+    {
+        // Player left clicks on game map
+        if (Input.GetMouseButtonDown(0) && !EventSystem.current.IsPointerOverGameObject())
+        {
+            Debug.Log("player left clicked");
+            PlayerLeftClicksAtWorldPosition(playerCamera.camera.ScreenToWorldPoint(Input.mousePosition));
+        }
+
+        // Player right clicks on game map
+        if (Input.GetMouseButtonDown(1) && !EventSystem.current.IsPointerOverGameObject())
+        {
+            PlayerRightClicksAtWorldPosition(playerCamera.camera.ScreenToWorldPoint(Input.mousePosition));
         }
     }
 }

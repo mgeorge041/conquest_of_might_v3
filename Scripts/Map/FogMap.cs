@@ -10,14 +10,14 @@ public class FogMap : Map
 
     // Constructor
     public FogMap() {
-        CreateMap<Hex>();
+        CreateMap();
     }
 
     // Constructor with map size
     public FogMap(int mapRadius) {
         this.mapRadius = mapRadius;
         newMapRadius = mapRadius;
-        CreateMap<Hex>();
+        CreateMap();
     }
 
     // Get visible tiles
@@ -36,7 +36,7 @@ public class FogMap : Map
             Vector3Int pieceHexCoords = pieces[i].gameHex.hexCoords;
 
             // Get all tiles within sight range
-            List<Hex> visibleHexes = GetHexesInRange<Hex>(pieceHexCoords, pieces[i].GetCard().sightRange, true);
+            List<Hex> visibleHexes = GetHexesInRange<Hex>(hexCoordsDict, pieceHexCoords, pieces[i].GetCard().sightRange, true);
             for (int j = 0; j < visibleHexes.Count; j++) {
                 visibleTileCoords.Add(visibleHexes[j].tileCoords);
             }

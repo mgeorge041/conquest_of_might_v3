@@ -66,6 +66,25 @@ namespace Tests.UTests.MapTests
             Assert.AreEqual(Vector3Int.zero, gameHex.tileCoords);
         }
 
+        // Test creates hex static function for non-center coords
+        [Test]
+        public void CreatesHexStaticFunctionForNonCenterTiles()
+        {
+            // Create normal hex
+            Vector3Int hexCoords = new Vector3Int(1, -1, 0);
+            Vector3Int tileCoords = new Vector3Int(0, 1, 0);
+            Hex hex = Hex.CreateHex<Hex>(TileUTests.CreateTestTileData(), hexCoords);
+            Assert.IsNotNull(hex);
+            Assert.AreEqual(hexCoords, hex.hexCoords);
+            Assert.AreEqual(tileCoords, hex.tileCoords);
+
+            // Create game hex
+            GameHex gameHex = (GameHex)Hex.CreateHex<GameHex>(TileUTests.CreateTestTileData(), hexCoords);
+            Assert.IsNotNull(gameHex);
+            Assert.AreEqual(hexCoords, gameHex.hexCoords);
+            Assert.AreEqual(tileCoords, gameHex.tileCoords);
+        }
+
         // Test getting tile data move cost
         [Test]
         public void GetsTileMoveCost()

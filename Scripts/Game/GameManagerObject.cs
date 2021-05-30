@@ -51,7 +51,7 @@ public class GameManagerObject : MonoBehaviour
         for (int i = 0; i < numPlayers; i++) {
 
             // Create player object
-            PlayerObject newPlayerObject = Instantiate(Resources.Load<PlayerObject>("Prefabs/Player Object"));
+            PlayerObject newPlayerObject = Instantiate(Resources.Load<PlayerObject>(ENV.PLAYER_PREFAB_RESOURCE_PATH));
             newPlayerObject.SetGameMap(gameMap);
             newPlayerObject.SetGameMapObject(gameMapObject);
             newPlayerObject.SetGameManagerObject(this);

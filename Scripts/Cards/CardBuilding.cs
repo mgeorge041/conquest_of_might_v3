@@ -8,7 +8,7 @@ public class CardBuilding : CardPiece
     // Load a test card building
     public static CardBuilding LoadTestCardBuilding()
     {
-        CardBuilding newCard = Resources.Load<CardBuilding>("Cards/Tests/Test Building");
+        CardBuilding newCard = Resources.Load<CardBuilding>(ENV.CARD_BUILDING_TEST_RESOURCE_PATH);
         return newCard;
     }
 }

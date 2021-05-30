@@ -53,6 +53,14 @@ namespace Tests.ITests.PieceTests
             Assert.AreEqual(cardBuilding.health, buildingWithoutCard.health);
         }
 
+        // Test does not set if card not a CardBuilding
+        [Test]
+        public void DoesNotSetForNonCardBuilding()
+        {
+            buildingWithoutCard.SetCard(CardUnitUTests.CreateTestCardUnit());
+            Assert.IsNull(buildingWithoutCard.GetCard());
+        }
+
         // Test take damage
         [Test]
         public void BuildingTakesCorrectDamage()
@@ -81,7 +89,6 @@ namespace Tests.ITests.PieceTests
             building1.AttackPiece(building2);
             Assert.AreEqual(7, building2.currentHealth);
             Assert.IsFalse(building1.canAttack);
-            Assert.IsFalse(building1.canMove);
             Assert.IsFalse(building1.hasActions);
         }
 
@@ -101,7 +108,6 @@ namespace Tests.ITests.PieceTests
             building1.EndTurn();
             building1.ResetPiece();
 
-            Assert.IsTrue(building1.canMove);
             Assert.IsTrue(building1.canAttack);
         }
 
@@ -110,7 +116,6 @@ namespace Tests.ITests.PieceTests
         public void BuildingEndsTurn()
         {
             building1.EndTurn();
-            Assert.IsFalse(building1.canMove);
             Assert.IsFalse(building1.canAttack);
         }
 
@@ -136,7 +141,7 @@ namespace Tests.ITests.PieceTests
         [Test]
         public void SetsLifebarWidthToMatchNewHealth()
         {
-            Sprite[] overlays = Resources.LoadAll<Sprite>("Art/Cards/Healthbar Overlay");
+            Sprite[] overlays = Resources.LoadAll<Sprite>(ENV.LIFEBAR_ART_RESOURCE_PATH);
             building1.health = 6;
             Assert.AreEqual(building1.lifebarOverlay.sprite, overlays[5]);
         }

@@ -6,21 +6,9 @@ using UnityEngine;
 public class Unit : GamePiece
 {
     private CardUnit cardUnit;
+    public bool canMove { get; set; } = true;
     public int speed { get; private set; }
     public int remainingSpeed { get; set; }
-
-    // Constructor for playerless unit
-    public Unit(CardUnit cardUnit) {
-        this.cardUnit = cardUnit;
-        SetCardStats();
-    }
-
-    // Constructor for player unit
-    public Unit(CardUnit cardUnit, Player player) {
-        this.cardUnit = cardUnit;
-        this.player = player;
-        SetCardStats();
-    }
 
     // Get card
     public override CardPiece GetCard() {
@@ -28,9 +16,15 @@ public class Unit : GamePiece
     }
 
     // Set card
-    public void SetCard(CardUnit cardUnit) {
-        this.cardUnit = cardUnit;
-        SetCardStats();
+    public override void SetCard(CardPiece cardPiece)
+    {
+        if (cardPiece is CardUnit)
+        {
+            CardUnit cardUnit = (CardUnit)cardPiece;
+            this.cardUnit = cardUnit;
+            pieceType = PieceType.Unit;
+            SetCardStats();
+        }
     }
 
     // Decrease speed
@@ -44,7 +38,7 @@ public class Unit : GamePiece
     }
 
     // Reset at beginning of turn
-    public new void ResetPiece() {
+    public override void ResetPiece() {
         remainingSpeed = speed;
         canAttack = true;
         canMove = true;
@@ -52,15 +46,30 @@ public class Unit : GamePiece
     }
 
     // End piece turn
-    public new void EndTurn() {
+    public override void EndTurn() {
         canAttack = false;
         DecreaseSpeed(remainingSpeed);
         CheckHasActions();
     }
 
+    // Check whether piece has actions
+    protected override void CheckHasActions()
+    {
+        if (!canAttack && !canMove)
+        {
+            hasActions = false;
+            ShowPieceDisabled();
+        }
+        else
+        {
+            hasActions = true;
+            ShowPieceDisabled();
+        }
+    }
+
     // Set information
     public void SetCardStats() {
-        base.SetCardStats(cardUnit);
+        SetCardStats(cardUnit);
         speed = cardUnit.speed;
         pieceType = PieceType.Unit;
         remainingSpeed = speed;

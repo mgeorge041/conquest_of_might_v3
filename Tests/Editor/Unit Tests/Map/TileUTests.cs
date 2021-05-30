@@ -10,7 +10,7 @@ namespace Tests.UTests.MapTests
     {
         public static TileData CreateTestTileData()
         {
-            TileData tileData = Resources.Load<TileData>("Tiles/Tile Data/Default");
+            TileData tileData = Resources.Load<TileData>(ENV.DEFAULT_TILE_RESOURCE_PATH);
             return tileData;
         }
 

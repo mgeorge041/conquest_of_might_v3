@@ -6,29 +6,20 @@ public class Building : GamePiece
 {
     private CardBuilding cardBuilding;
 
-    // Constructor for playerless building
-    public Building(CardBuilding cardBuilding) {
-        this.cardBuilding = cardBuilding;
-        SetCardStats(cardBuilding);
-        pieceType = PieceType.Building;
-    }
-
-    // Constructor for player building
-    public Building(CardBuilding cardBuilding, Player player) {
-        this.cardBuilding = cardBuilding;
-        this.player = player;
-        SetCardStats(cardBuilding);
-        pieceType = PieceType.Building;
-    }
-
     // Get card
     public override CardPiece GetCard() {
         return cardBuilding;
     }
 
     // Set card
-    public void SetCard(CardBuilding cardBuilding) {
-        this.cardBuilding = cardBuilding;
-        base.SetCardStats(cardBuilding);
+    public override void SetCard(CardPiece cardPiece)
+    {
+        if (cardPiece is CardBuilding)
+        {
+            CardBuilding cardBuilding = (CardBuilding)cardPiece;
+            this.cardBuilding = cardBuilding;
+            pieceType = PieceType.Building;
+            SetCardStats(cardBuilding);
+        }
     }
 }

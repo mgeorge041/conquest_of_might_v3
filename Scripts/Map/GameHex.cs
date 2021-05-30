@@ -19,9 +19,7 @@ public class GameHex : Hex
     };
 
     // Constructor
-    public GameHex(TileData tileData, Vector3Int hexCoords) {
-        this.tileData = tileData;
-        this.hexCoords = hexCoords;
+    public GameHex(TileData tileData, Vector3Int hexCoords) : base(tileData, hexCoords){
         SetNeighborCoords();
     }
 
@@ -47,6 +45,17 @@ public class GameHex : Hex
 
     // Get whether piece can move
     public bool PieceCanMove() {
-        return piece.canMove;
+        if (piece != null)
+        {
+            if (piece.pieceType == PieceType.Building)
+                return false;
+            else
+            {
+                Unit unit = (Unit)piece;
+                return unit.canMove;
+            }
+                
+        }
+        return false;
     }
 }

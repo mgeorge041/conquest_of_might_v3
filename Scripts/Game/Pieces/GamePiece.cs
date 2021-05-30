@@ -13,7 +13,7 @@ public abstract class GamePiece : MonoBehaviour
         get { return Health; }
         set {
             Health = value;
-            Sprite[] overlays = Resources.LoadAll<Sprite>("Art/Cards/Healthbar Overlay");
+            Sprite[] overlays = Resources.LoadAll<Sprite>(ENV.LIFEBAR_ART_RESOURCE_PATH);
             lifebarOverlay.sprite = overlays[value - 1];
             SetCardLifebarOverlay(lifebarOverlay.sprite);
         } 
@@ -24,8 +24,7 @@ public abstract class GamePiece : MonoBehaviour
     public int sightRange { get; set; }
 
     // Actions
-    public bool canAttack { get; set; } = false;
-    public bool canMove { get; set; } 
+    public bool canAttack { get; set; } = true;
     public bool hasActions { get; protected set; } = true;
 
     public SpriteRenderer art;
@@ -49,23 +48,21 @@ public abstract class GamePiece : MonoBehaviour
     public GameHex gameHex { get; set; }
 
     public abstract CardPiece GetCard();
+    public abstract void SetCard(CardPiece cardPiece);
 
     // Create piece, decrease resources, and show hand playable cards
-    public static GamePiece CreatePiece(CardPiece cardPiece, Player player) {
-        if (cardPiece.cardType == CardType.Unit) {
-            Unit newUnit = new Unit((CardUnit)cardPiece, player);
-            return newUnit;
-        }
-        else {
-            Building newBuilding = new Building((CardBuilding)cardPiece, player);
-            return newBuilding;
-        }
+    public static T CreatePiece<T>(CardPiece cardPiece, Player player) where T : GamePiece
+    {
+        T newPiece = Instantiate(GetPiecePrefab<T>());
+        newPiece.SetCard(cardPiece);
+        newPiece.player = player;
+        return newPiece;
     }
 
     // Create starting castle
     public static GamePiece CreateCastle(Player player) {
-        CardBuilding castle = Resources.Load<CardBuilding>("Cards/Building/Castle");
-        GamePiece castlePiece = CreatePiece(castle, player);
+        CardBuilding castle = Resources.Load<CardBuilding>(ENV.CASTLE_CARD_RESOURCE_PATH);
+        GamePiece castlePiece = CreatePiece<Building>(castle, player);
         return castlePiece;
     }
 
@@ -75,22 +72,20 @@ public abstract class GamePiece : MonoBehaviour
     }
 
     // Reset at beginning of turn
-    public void ResetPiece() {
+    public virtual void ResetPiece() {
         canAttack = true;
-        canMove = true;
         CheckHasActions();
     }
 
     // End piece turn
-    public void EndTurn() {
+    public virtual void EndTurn() {
         canAttack = false;
-        canMove = false;
         CheckHasActions();
     }
 
     // Check whether piece has actions
-    protected void CheckHasActions() {
-        if (!canAttack && !canMove) {
+    protected virtual void CheckHasActions() {
+        if (!canAttack) {
             hasActions = false;
             ShowPieceDisabled();
         }
@@ -152,13 +147,13 @@ public abstract class GamePiece : MonoBehaviour
     }
 
     // Set piece object position
-    public void SetPosition(GameMapObject gameMapObject)
+    public void SetPosition(GameMap gameMap)
     {
         Vector3Int tileCoords = Hex.HexToTileCoords(gameHex.hexCoords);
-        Vector3 tilePosition = gameMapObject.tileGrid.CellToWorld(tileCoords);
-        Vector3 newPosition = new Vector3(tilePosition.x, tilePosition.y, -1);
-        StartCoroutine(MoveOverTime(newPosition));
-        //transform.position = new Vector3(tilePosition.x, tilePosition.y, -1);
+        Vector3 tilePosition = gameMap.tileGrid.CellToWorld(tileCoords);
+        Vector3 newPosition = new Vector3(tilePosition.x, tilePosition.y, 0);
+        //StartCoroutine(MoveOverTime(newPosition));
+        transform.position = new Vector3(tilePosition.x, tilePosition.y, 0);
     }
 
     // Animate movement of piece
@@ -189,7 +184,7 @@ public abstract class GamePiece : MonoBehaviour
     // Set the width of the lifebar for current health
     public void SetLifebarCurrentHealth()
     {
-        lifebar.fillAmount = (float)currentHealth / (float)health;
+        lifebar.fillAmount = currentHealth / (float)health;
     }
 
     // Set the card display's healthbar
@@ -209,64 +204,26 @@ public abstract class GamePiece : MonoBehaviour
         pieceCanvas.localPosition = new Vector3(0, spriteHeight / 2, position.z);
     }
 
-    // Get unit prefab
-    public static GamePieceObject GetUnitPrefab()
+    // Get piece prefab
+    public static T GetPiecePrefab<T>() where T : GamePiece
     {
-        GamePieceObject gamePieceObject = Resources.Load<GamePieceObject>("Prefabs/Unit");
-        return gamePieceObject;
-    }
-
-    // Initialize from a card piece
-    public static GamePieceObject InitializeFromCardPiece(CardPiece cardPiece, Transform parentTransform, Player player)
-    {
-        if (cardPiece.cardType == CardType.Unit)
+        if (typeof(T) == typeof(Unit))
         {
-            GamePieceObject newUnitObject = Instantiate(GetUnitPrefab(), parentTransform);
-            Unit newUnit = new Unit((CardUnit)cardPiece, player);
-            newUnitObject.SetPiece(newUnit);
-            return newUnitObject;
+            T newUnit = Resources.Load<T>(ENV.UNIT_PREFAB_RESOURCE_PATH);
+            return newUnit;
         }
-        else if (cardPiece.cardType == CardType.Building)
+        else if (typeof(T) == typeof(Building))
         {
-            GamePieceObject newBuildingObject = Instantiate(GetUnitPrefab(), parentTransform);
-            Building newBuilding = new Building((CardBuilding)cardPiece, player);
-            newBuildingObject.SetPiece(newBuilding);
-            return newBuildingObject;
+            T newBuilding = Resources.Load<T>(ENV.BUILDING_PREFAB_RESOURCE_PATH);
+            return newBuilding;
         }
-        else
-        {
-            return null;
-        }
-    }
-
-    // Initialize from a game piece
-    public static GamePieceObject InitializeFromGamePiece(GamePiece piece, Transform parentTransform, int playerId)
-    {
-        CardPiece cardPiece = piece.GetCard();
-        if (cardPiece.cardType == CardType.Unit)
-        {
-            GamePieceObject newUnitObject = Instantiate(GetUnitPrefab(), parentTransform);
-            newUnitObject.SetPiece(piece);
-            //piece.gamePieceObject = newUnitObject;
-            return newUnitObject;
-        }
-        else if (cardPiece.cardType == CardType.Building)
-        {
-            GamePieceObject newBuildingObject = Instantiate(GetUnitPrefab(), parentTransform);
-            newBuildingObject.SetPiece(piece);
-            //piece.gamePieceObject = newBuildingObject;
-            return newBuildingObject;
-        }
-        else
-        {
-            return null;
-        }
+        return null;
     }
 
     // Start is called before the first frame update
     void Start()
     {
-
+        ResetPiece();
     }
 
     // Update is called once per frame

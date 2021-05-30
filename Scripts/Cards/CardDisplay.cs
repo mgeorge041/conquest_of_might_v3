@@ -43,19 +43,19 @@ public abstract class CardDisplay : MonoBehaviour
 
     // Get card unit display prefab
     private static CardUnitDisplay GetCardUnitDisplayPrefab() {
-        CardUnitDisplay cardUnitDisplayPrefab = Resources.Load<CardUnitDisplay>("Prefabs/Card Unit Display");
+        CardUnitDisplay cardUnitDisplayPrefab = Resources.Load<CardUnitDisplay>(ENV.CARD_UNIT_DISPLAY_PREFAB_RESOURCE_PATH);
         return cardUnitDisplayPrefab;
     }
 
     // Get card building display prefab
     private static CardBuildingDisplay GetCardBuildingDisplayPrefab() {
-        CardBuildingDisplay cardBuildingDisplayPrefab = Resources.Load<CardBuildingDisplay>("Prefabs/Card Building Display");
+        CardBuildingDisplay cardBuildingDisplayPrefab = Resources.Load<CardBuildingDisplay>(ENV.CARD_BUILDING_DISPLAY_PREFAB_RESOURCE_PATH);
         return cardBuildingDisplayPrefab;
     }
 
     // Get card resource display prefab
     private static CardResourceDisplay GetCardResourceDisplayPrefab() {
-        CardResourceDisplay cardResourceDisplayPrefab = Resources.Load<CardResourceDisplay>("Prefabs/Card Resource Display");
+        CardResourceDisplay cardResourceDisplayPrefab = Resources.Load<CardResourceDisplay>(ENV.CARD_RESOURCE_DISPLAY_PREFAB_RESOURCE_PATH);
         return cardResourceDisplayPrefab;
     }
 

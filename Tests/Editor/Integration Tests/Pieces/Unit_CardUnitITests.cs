@@ -53,6 +53,14 @@ namespace Tests.ITests.PieceTests
             Assert.AreEqual(cardUnit.health, unitWithoutCard.health);
         }
 
+        // Test does not set if card not a CardUnit
+        [Test]
+        public void DoesNotSetForNonCardUnit()
+        {
+            unitWithoutCard.SetCard(CardBuildingUTests.CreateTestCardBuilding());
+            Assert.IsNull(unitWithoutCard.GetCard());
+        }
+
         // Test take damage
         [Test]
         public void UnitTakesCorrectDamage()
@@ -156,7 +164,7 @@ namespace Tests.ITests.PieceTests
         [Test]
         public void SetsLifebarWidthToMatchNewHealth()
         {
-            Sprite[] overlays = Resources.LoadAll<Sprite>("Art/Cards/Healthbar Overlay");
+            Sprite[] overlays = Resources.LoadAll<Sprite>(ENV.LIFEBAR_ART_RESOURCE_PATH);
             unit1.health = 6;
             Assert.AreEqual(unit1.lifebarOverlay.sprite, overlays[5]);
         }

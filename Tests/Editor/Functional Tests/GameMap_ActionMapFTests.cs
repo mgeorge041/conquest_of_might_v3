@@ -15,9 +15,13 @@ namespace Tests.FTests.GameMapTests
         private ActionMap actionMap;
         private Player player1;
         private Player player2;
+        private MapCamera player1Camera;
+        private MapCamera player2Camera;
         private Unit unit1;
         private Unit unit2;
         private Vector3Int hexCoords;
+        private Vector3Int targetHexCoords;
+        private Vector3 mousePosition;
         private GameHex gameHex;
 
         // Setup
@@ -27,18 +31,27 @@ namespace Tests.FTests.GameMapTests
             gameMap = GameMapUTests.CreateTestGameMap();
             player1 = PlayerUTests.CreateTestPlayer(1);
             player2 = PlayerUTests.CreateTestPlayer(2);
+            player1Camera = MapCameraUTests.CreateTestMapCamera();
+            player2Camera = MapCameraUTests.CreateTestMapCamera();
             player1.gameMap = gameMap;
             player2.gameMap = gameMap;
+            player1.playerCamera = player1Camera;
+            player2.playerCamera = player2Camera;
+            
             actionMap = player1.actionMap;
             unit1 = UnitCardUnitITests.CreateTestUnitWithCard();
             unit2 = UnitCardUnitITests.CreateTestUnitWithCard();
             unit1.player = player1;
             unit2.player = player2;
             hexCoords = new Vector3Int(0, 0, 0);
+            targetHexCoords = new Vector3Int(1, -1, 0);
+            mousePosition = gameMap.HexToWorldCoords(hexCoords);
+            player1Camera.MoveCameraToPosition(mousePosition);
+            player2Camera.MoveCameraToPosition(mousePosition);
             gameMap.AddPiece(unit1, hexCoords);
 
             // Get center hex
-            gameHex = gameMap.GetWorldPositionHex<GameHex>(Vector3Int.zero);
+            gameHex = gameMap.GetWorldPositionHex(Vector3Int.zero);
         }
 
         // End
@@ -57,8 +70,27 @@ namespace Tests.FTests.GameMapTests
         public void CreatesActionMapOnPieceClick()
         {
             unit1.remainingSpeed = 2;
-            player1.SetSelectedPiece(gameHex.piece);
+            player1.PlayerLeftClicksAtWorldPosition(mousePosition);
             Assert.AreEqual(18, actionMap.movementTiles.Count);
+        }
+
+        // Test does not create action map on click of enemy piece
+        [Test]
+        public void DoesNotCreateActionMapOnEnemyPieceClick()
+        {
+            gameMap.AddPiece(unit2, targetHexCoords);
+            player1.PlayerLeftClicksAtWorldPosition(gameMap.HexToWorldCoords(targetHexCoords));
+            Assert.AreEqual(0, actionMap.movementTiles.Count);
+            Assert.AreEqual(0, actionMap.attackTiles.Count);
+        }
+
+        // Test does not set selected piece if it has no actions
+        [Test]
+        public void DoesNotSetSelectedPieceIfHasNoActions()
+        {
+            unit1.EndTurn();
+            player1.PlayerLeftClicksAtWorldPosition(gameMap.HexToWorldCoords(hexCoords));
+            Assert.IsNull(player1.selectedPiece);
         }
 
         // Test move piece to moveable tile
@@ -66,9 +98,8 @@ namespace Tests.FTests.GameMapTests
         public void MovesPieceToMoveableTile()
         {
             unit1.remainingSpeed = 1;
-            player1.SetSelectedPiece(gameHex.piece);
-            Vector3Int targetHexCoords = new Vector3Int(1, -1, 0);
-            gameMap.MovePiece(player1.GetSelectedUnit(), targetHexCoords);
+            player1.PlayerLeftClicksAtWorldPosition(mousePosition);
+            player1.PlayerRightClicksAtWorldPosition(gameMap.HexToWorldCoords(targetHexCoords));
             Assert.IsNull(gameMap.GetHexAtHexCoords(hexCoords).piece);
             Assert.AreEqual(unit1, gameMap.GetHexAtHexCoords(targetHexCoords).piece);
         }
@@ -78,9 +109,9 @@ namespace Tests.FTests.GameMapTests
         public void DoesNotMovePieceToNonMoveableTile()
         {
             unit1.remainingSpeed = 1;
-            player1.SetSelectedPiece(gameHex.piece);
-            Vector3Int targetHexCoords = new Vector3Int(2, -2, 0);
-            gameMap.MovePiece(player1.GetSelectedUnit(), targetHexCoords);
+            player1.PlayerLeftClicksAtWorldPosition(mousePosition);
+            targetHexCoords = new Vector3Int(2, -2, 0);
+            player1.PlayerRightClicksAtWorldPosition(gameMap.HexToWorldCoords(targetHexCoords));
             Assert.IsNull(gameMap.GetHexAtHexCoords(targetHexCoords).piece);
             Assert.AreEqual(player1.GetSelectedUnit(), gameMap.GetHexAtHexCoords(hexCoords).piece);
         }
@@ -90,9 +121,8 @@ namespace Tests.FTests.GameMapTests
         public void MovesPieceToMoveableTileAndDeselectsPiece()
         {
             unit1.remainingSpeed = 1;
-            player1.SetSelectedPiece(gameHex.piece);
-            Vector3Int targetHexCoords = new Vector3Int(1, -1, 0);
-            gameMap.MovePiece(player1.GetSelectedUnit(), targetHexCoords);
+            player1.PlayerLeftClicksAtWorldPosition(mousePosition);
+            player1.PlayerRightClicksAtWorldPosition(gameMap.HexToWorldCoords(targetHexCoords));
             Assert.IsNull(player1.selectedPiece);
             Assert.AreEqual(0, actionMap.movementTiles.Count);
             Assert.AreEqual(0, actionMap.attackTiles.Count);
@@ -102,11 +132,10 @@ namespace Tests.FTests.GameMapTests
         [Test]
         public void AttacksPiece()
         {
-            player1.SetSelectedPiece(gameHex.piece);
-            Vector3Int targetHexCoords = new Vector3Int(1, -1, 0);
             gameMap.AddPiece(unit2, targetHexCoords);
             unit1.might = 3;
-            gameMap.AttackPiece(player1.selectedPiece, unit2);
+            player1.PlayerLeftClicksAtWorldPosition(mousePosition);
+            player1.PlayerRightClicksAtWorldPosition(gameMap.HexToWorldCoords(targetHexCoords));
             Assert.AreEqual(2, unit2.currentHealth);
         }
 
@@ -114,12 +143,11 @@ namespace Tests.FTests.GameMapTests
         [Test]
         public void DoesNotAttackPieceOfSamePlayer()
         {
-            player1.SetSelectedPiece(gameHex.piece);
+            player1.PlayerLeftClicksAtWorldPosition(mousePosition);
             Unit unit3 = UnitCardUnitITests.CreateTestUnitWithCard();
             unit3.player = player1;
-            Vector3Int targetHexCoords = new Vector3Int(1, -1, 0);
             gameMap.AddPiece(unit3, targetHexCoords);
-            gameMap.AttackPiece(unit1, unit3);
+            player1.PlayerRightClicksAtWorldPosition(gameMap.HexToWorldCoords(targetHexCoords));
             Assert.AreEqual(5, unit3.currentHealth);
         }
 
@@ -127,11 +155,10 @@ namespace Tests.FTests.GameMapTests
         [Test]
         public void AttacksPieceAndDeselectsPiece()
         {
-            player1.SetSelectedPiece(gameHex.piece);
-            Vector3Int targetHexCoords = new Vector3Int(1, -1, 0);
             gameMap.AddPiece(unit2, targetHexCoords);
             unit1.might = 3;
-            gameMap.AttackPiece(player1.selectedPiece, unit2);
+            player1.PlayerLeftClicksAtWorldPosition(mousePosition);
+            player1.PlayerRightClicksAtWorldPosition(gameMap.HexToWorldCoords(targetHexCoords));
             Assert.IsNull(player1.selectedPiece);
             Assert.AreEqual(0, actionMap.movementTiles.Count);
             Assert.AreEqual(0, actionMap.attackTiles.Count);

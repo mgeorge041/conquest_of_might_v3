@@ -19,7 +19,7 @@ namespace Tests.UTests.PlayerTests
         // Get number of test cards
         private int GetNumberTestCards()
         {
-            Card[] cards = Resources.LoadAll<Card>("Cards/Tests/");
+            Card[] cards = Resources.LoadAll<Card>(ENV.CARDS_RESOURCE_PATH);
             return cards.Length;
         }
 
@@ -55,7 +55,7 @@ namespace Tests.UTests.PlayerTests
         {
             // Create list of custom cards
             int numCards = 3;
-            Card[] testCards = Resources.LoadAll<Card>("Cards/Tests/");
+            Card[] testCards = Resources.LoadAll<Card>(ENV.CARDS_RESOURCE_PATH);
             Dictionary<Card, int> deckCards = new Dictionary<Card, int>();
             foreach (Card card in testCards)
             {

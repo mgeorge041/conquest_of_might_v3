@@ -26,6 +26,7 @@ public class Hand
             // Increment resource
             if (card.cardType == CardType.Resource) {
                 player.IncrementResource(card.res1, card.res1Cost);
+                player.playerUI.UpdateAllResources(player.resources);
                 SetPlayableCards();
             }
 

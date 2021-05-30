@@ -33,7 +33,7 @@ namespace Tests.UTests.PlayerTests
 
             // Get current food count and play card
             int foodCount = player.GetResourceCount(ResourceType.Food);
-            player.gameMap.AddPiece(GamePiece.CreatePiece(cardPiece, player), new Vector3Int(0, 0, 0));
+            player.gameMap.AddPiece(GamePiece.CreatePiece<GamePiece>(cardPiece, player), new Vector3Int(0, 0, 0));
 
             // Confirm card was removed from hand and resources decremented
             Assert.AreEqual(numCards - 1, player.hand.cards.Count);

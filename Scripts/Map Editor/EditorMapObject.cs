@@ -37,7 +37,7 @@ public class EditorMapObject : MapObject
 
     // Draw the map
     public void DrawEditorMap() {
-        editorMap.CreateMap<Hex>();
+        editorMap.CreateMap();
         ClearEditorMap();
         PaintEditorMap();
     }

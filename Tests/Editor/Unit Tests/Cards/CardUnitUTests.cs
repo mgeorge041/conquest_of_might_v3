@@ -13,7 +13,7 @@ namespace Tests.UTests.CardTests
         // Load a test unit card
         public static CardUnit CreateTestCardUnit()
         {
-            CardUnit newCard = Resources.Load<CardUnit>("Cards/Tests/Test Unit");
+            CardUnit newCard = Resources.Load<CardUnit>(ENV.CARD_UNIT_TEST_RESOURCE_PATH);
             return newCard;
         }
 

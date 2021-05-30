@@ -15,7 +15,7 @@ namespace Tests.UTests.PlayerTests
         // Create a player
         public static Player CreateTestPlayer() {
             Vector3Int startTileCoords = new Vector3Int(-4, 4, 0);
-            Player newPlayer = TestFunctions.CreateClassObject<Player>("Assets/Resources/Prefabs/Player Object.prefab");
+            Player newPlayer = TestFunctions.CreateClassObject<Player>(ENV.PLAYER_PREFAB_FULL_PATH);
             newPlayer.InitializeObject(0, startTileCoords);
             return newPlayer;
         }
@@ -24,7 +24,7 @@ namespace Tests.UTests.PlayerTests
         public static Player CreateTestPlayer(int playerId)
         {
             Vector3Int startTileCoords = new Vector3Int(-4, 4, 0);
-            Player newPlayer = TestFunctions.CreateClassObject<Player>("Assets/Resources/Prefabs/Player Object.prefab");
+            Player newPlayer = TestFunctions.CreateClassObject<Player>(ENV.PLAYER_PREFAB_FULL_PATH);
             newPlayer.InitializeObject(playerId, startTileCoords);
             return newPlayer;
         }

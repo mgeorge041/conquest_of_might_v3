@@ -18,7 +18,7 @@ public class MapTestScene : MonoBehaviour
     // Highlight test map hexes in range
     public void HighlightHexesInRange(Vector3Int centerHexCoords, int range)
     {
-        testMap.HighlightHexesInRange<Hex>(centerHexCoords, range);
+        testMap.HighlightHexesInRange(testMap.hexCoordsDict, centerHexCoords, range);
     }
 
     // Mouse clicks
@@ -29,7 +29,7 @@ public class MapTestScene : MonoBehaviour
             // Highlight hexes in range
             if (!isHighlighted)
             {
-                Vector3Int hexCoords = testMap.GetMouseHexCoords(Camera.main, Input.mousePosition);
+                Vector3Int hexCoords = testMap.WorldToHexCoords(Camera.main.ScreenToWorldPoint(Input.mousePosition));
                 HighlightHexesInRange(hexCoords, hightlightHexRange);
                 isHighlighted = true;
             }

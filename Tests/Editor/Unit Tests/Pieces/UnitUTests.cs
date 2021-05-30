@@ -13,7 +13,7 @@ namespace Tests.UTests.PieceTests
         // Create test unit
         public static Unit CreateTestUnit()
         {
-            Unit newUnit = TestFunctions.CreateClassObject<Unit>("Assets/Resources/Prefabs/Unit.prefab");
+            Unit newUnit = TestFunctions.CreateClassObject<Unit>(ENV.UNIT_PREFAB_FULL_PATH);
             return newUnit;
         }
 
@@ -36,6 +36,35 @@ namespace Tests.UTests.PieceTests
         public void CreatesUnit()
         {
             Assert.IsNotNull(unit1);
+        }
+
+        // Test unit is created with actions
+        [Test]
+        public void UnitStartsWithActions()
+        {
+            Assert.IsTrue(unit1.canAttack);
+            Assert.IsTrue(unit1.canMove);
+            Assert.IsTrue(unit1.hasActions);
+        }
+
+        // Test end turn
+        [Test]
+        public void EndsTurn()
+        {
+            unit1.EndTurn();
+            Assert.IsFalse(unit1.canAttack);
+            Assert.IsFalse(unit1.canMove);
+            Assert.IsFalse(unit1.hasActions);
+        }
+
+        // Test reset piece
+        [Test]
+        public void ResetsPiece()
+        {
+            unit1.ResetPiece();
+            Assert.IsTrue(unit1.canAttack);
+            Assert.IsTrue(unit1.canMove);
+            Assert.IsTrue(unit1.hasActions);
         }
     }
 }

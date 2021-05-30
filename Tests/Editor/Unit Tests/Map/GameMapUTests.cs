@@ -10,7 +10,19 @@ namespace Tests.UTests.MapTests
 {
     public class GameMapUTests
     {
+        // Coordinates for neighbor hexes
+        private Vector3Int[] neighborCoords =
+        {
+            new Vector3Int(-1, 1, 0),
+            new Vector3Int(0, 1, -1),
+            new Vector3Int(1, 0, -1),
+            new Vector3Int(1, -1, 0),
+            new Vector3Int(0, -1, 1),
+            new Vector3Int(-1, 0, 1)
+        };
         private GameMap gameMap;
+        private Vector3Int hexCoords;
+        private List<Vector3Int> hexCoordsInRange;
 
         // Create game map
         public static GameMap CreateTestGameMap()
@@ -39,6 +51,26 @@ namespace Tests.UTests.MapTests
         public void CreatesGameMap()
         {
             Assert.IsNotNull(gameMap);
+            Assert.AreEqual(Vector3.zero, gameMap.transform.position);
+        }
+
+        // Test get hex coords within 1 range
+        [Test]
+        public void GetsCorrectHexCoordsIn1Range()
+        {
+            hexCoordsInRange = gameMap.GetHexCoordsInRange(hexCoords, 1);
+            for (int i = 0; i < neighborCoords.Length; i++)
+            {
+                Assert.Contains(neighborCoords[i], hexCoordsInRange);
+            }
+        }
+
+        // Test get hex
+        [Test]
+        public void GetsHex()
+        {
+            GameHex gameHex = gameMap.GetHexAtHexCoords(Vector3Int.zero);
+            Assert.IsNotNull(gameHex);
         }
     }
 }

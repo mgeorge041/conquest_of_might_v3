@@ -13,7 +13,7 @@ namespace Tests.UTests.CardTests
         // Load a test building card
         public static CardBuilding CreateTestCardBuilding()
         {
-            CardBuilding newCard = Resources.Load<CardBuilding>("Cards/Tests/Test Building");
+            CardBuilding newCard = Resources.Load<CardBuilding>(ENV.CARD_BUILDING_TEST_RESOURCE_PATH);
             return newCard;
         }
 

@@ -186,7 +186,7 @@ public class PlayerObject : MonoBehaviour
     private void AttackPiece(Vector3Int targetTileCoords) {
 
         // Get targeted piece and player object
-        GamePiece targetPiece = gameMap.GetHexPiece(Hex.TileToHexCoords(targetTileCoords));
+        GamePiece targetPiece = gameMap.GetHexPieceFromHexCoords(Hex.TileToHexCoords(targetTileCoords));
         PlayerObject playerObject = gameManagerObject.GetPlayerObject(targetPiece.GetPlayerId());
 
         // Attack piece
@@ -230,7 +230,7 @@ public class PlayerObject : MonoBehaviour
 
     // Play piece at location
     public void PlayCardAtTile(CardPiece cardPiece, Vector3Int tileCoords) {
-        GamePiece newPiece = GamePiece.CreatePiece(cardPiece, player);
+        GamePiece newPiece = GamePiece.CreatePiece<GamePiece>(cardPiece, player);
         gameMap.AddPiece(newPiece, tileCoords);
         CreateAndPositionPieceObject(newPiece);
     }
@@ -238,7 +238,7 @@ public class PlayerObject : MonoBehaviour
     // Play selected card at location
     public void PlaySelectedCardAtTile(Vector3Int tileCoords) {
         CardPiece selectedCard = player.selectedCard;
-        GamePiece newPiece = GamePiece.CreatePiece(selectedCard, player);
+        GamePiece newPiece = GamePiece.CreatePiece<GamePiece>(selectedCard, player);
         gameMap.AddPiece(newPiece, tileCoords);
         CreateAndPositionPieceObject(newPiece);
         Destroy(selectedCardDisplay.gameObject);
@@ -338,7 +338,7 @@ public class PlayerObject : MonoBehaviour
             if (tileCoords != null) {
 
                 // Play card from hand
-                if (player.hasSelectedCard && player.actionMap.PlayableToTile(tileCoords)) {
+                if (player.hasSelectedCard && player.actionMap.PlayableToTileAtTileCoords(tileCoords)) {
                     Debug.Log("playing selected card");
                     PlaySelectedCardAtTile(tileCoords);
                 }
@@ -348,13 +348,13 @@ public class PlayerObject : MonoBehaviour
                     Debug.Log("player has selected piece");
 
                     // Move to tile
-                    if (player.actionMap.MoveableToTile(tileCoords)) {
+                    if (player.actionMap.MoveableToTileAtTileCoords(tileCoords)) {
                         Debug.Log("moving selected piece");
                         MovePiece(tileCoords);
                     }
 
                     // Attack tile
-                    else if (player.actionMap.AttackableTile(tileCoords)) {
+                    else if (player.actionMap.AttackableTileAtTileCoords(tileCoords)) {
                         Debug.Log("attacking piece");
                         AttackPiece(tileCoords);
                     }

@@ -107,7 +107,7 @@ public class MapObject : MonoBehaviour
     // Get hex coordinates from mouse position
     public Vector3Int GetMouseHexCoords(Camera playerCamera, Vector3 mousePosition) {
         Vector3Int tileCoords = GetMouseTileCoords(playerCamera, mousePosition);
-        return map.GetHexCoordsFromTileCoords(tileCoords);
+        return Hex.TileToHexCoords(tileCoords);
     }
 
     // Get whether over a tilemap tile

@@ -13,7 +13,7 @@ namespace Tests.UTests.PieceTests
         // Create test building
         public static Building CreateTestBuilding()
         {
-            Building newBuilding = TestFunctions.CreateClassObject<Building>("Assets/Resources/Prefabs/Building.prefab");
+            Building newBuilding = TestFunctions.CreateClassObject<Building>(ENV.BUILDING_PREFAB_FULL_PATH);
             return newBuilding;
         }
 
@@ -36,6 +36,32 @@ namespace Tests.UTests.PieceTests
         public void CreatesBuilding()
         {
             Assert.IsNotNull(building1);
+        }
+
+        // Test building is created with actions
+        [Test]
+        public void BuildingStartsWithActions()
+        {
+            Assert.IsTrue(building1.canAttack);
+            Assert.IsTrue(building1.hasActions);
+        }
+
+        // Test end turn
+        [Test]
+        public void EndsTurn()
+        {
+            building1.EndTurn();
+            Assert.IsFalse(building1.canAttack);
+            Assert.IsFalse(building1.hasActions);
+        }
+
+        // Test reset piece
+        [Test]
+        public void ResetsPiece()
+        {
+            building1.ResetPiece();
+            Assert.IsTrue(building1.canAttack);
+            Assert.IsTrue(building1.hasActions);
         }
     }
 }

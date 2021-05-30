@@ -17,7 +17,7 @@ public class Deck
     // Use this for initialization
     public Deck() 
     {
-        Card[] cards = Resources.LoadAll<Card>("Cards/Tests/");
+        Card[] cards = Resources.LoadAll<Card>(ENV.CARDS_RESOURCE_PATH);
 
         for (int i = 0; i < 10; i++) {
             for (int j = 0; j < cards.Length; j++) {

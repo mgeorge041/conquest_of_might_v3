@@ -21,7 +21,7 @@ namespace Tests.ITests.PlayerTests
         {
             playerGameData = PlayerGameDataUTests.CreateTestPlayerGameData();
             cardUnit = CardUnitUTests.CreateTestCardUnit();
-            cardResource = CardResourceUTests.CreateTestCardResource();
+            cardResource = CardResourceUTests.CreateTestFoodCardResource();
             cardBuilding = CardBuildingUTests.CreateTestCardBuilding();
         }
 

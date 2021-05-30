@@ -34,7 +34,7 @@ namespace Tests.ITests.PlayerTests
             player.hand = hand;
             cardUnit = CardUnitUTests.CreateTestCardUnit();
             cardBuilding = CardBuildingUTests.CreateTestCardBuilding();
-            cardResource = CardResourceUTests.CreateTestCardResource();
+            cardResource = CardResourceUTests.CreateTestFoodCardResource();
         }
 
         // End
@@ -78,6 +78,18 @@ namespace Tests.ITests.PlayerTests
             hand.AddCard(cardResource);
             Assert.AreEqual(0, hand.cards.Count);
             Assert.AreEqual(1, player.GetResourceCount(ResourceType.Food));
+        }
+
+        // Test add multiple card resource to hand
+        [Test]
+        public void AddsMultipleCardResourceToHand()
+        {
+            for (int i = 0; i < 5; i++)
+            {
+                hand.AddCard(cardResource);
+                cardResource = CardResourceUTests.CreateTestFoodCardResource();
+            }
+            Assert.AreEqual(5, player.GetResourceCount(ResourceType.Food));
         }
 
     }

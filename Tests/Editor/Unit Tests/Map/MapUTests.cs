@@ -82,7 +82,7 @@ namespace Tests.UTests.MapTests
         [Test]
         public void Gets6HexesIn1Range() {
             // Confirm gets 6 tiles in 1 range
-            hexesInRange = map.GetHexesInRange<Hex>(hexCoords, 1);
+            hexesInRange = map.GetHexesInRange(map.hexCoordsDict, hexCoords, 1);
             Assert.AreEqual(hexesInRange.Count, 6);
         }
 
@@ -101,7 +101,7 @@ namespace Tests.UTests.MapTests
         [Test]
         public void Gets18HexesIn2Range()
         {
-            hexesInRange = map.GetHexesInRange<Hex>(hexCoords, 2);
+            hexesInRange = map.GetHexesInRange(map.hexCoordsDict, hexCoords, 2);
             Assert.AreEqual(hexesInRange.Count, 18);
         }
 
@@ -110,7 +110,7 @@ namespace Tests.UTests.MapTests
         public void Gets6HexesIn1RangeFromNonCenterHex()
         {
             hexCoords = new Vector3Int(-1, 1, 0);
-            hexesInRange = map.GetHexesInRange<Hex>(hexCoords, 1);
+            hexesInRange = map.GetHexesInRange(map.hexCoordsDict, hexCoords, 1);
         }
 
         // Test get hex coords within 1 range from non-center tile
@@ -159,6 +159,25 @@ namespace Tests.UTests.MapTests
             // Confirm does not get hex that is not in map
             Hex hex = map.GetHexAtHexCoords(badTileCoords);
             Assert.IsNull(hex);
+        }
+
+        // Test convert cell to world coords and back
+        [Test]
+        public void ConvertsCellToWorldCoordsAndBack()
+        {
+            Vector3 worldCoords = map.HexToWorldCoords(hexCoords);
+            Vector3Int newHexCoords = map.WorldToHexCoords(worldCoords);
+            Assert.AreEqual(hexCoords, newHexCoords);
+        }
+
+        // Test convert non-center cell to world coords and back
+        [Test]
+        public void ConvertsNonCenterCellToWorldCoordsAndBack()
+        {
+            Vector3Int targetHexCoords = new Vector3Int(1, -1, 0);
+            Vector3 worldCoords = map.HexToWorldCoords(targetHexCoords);
+            Vector3Int newHexCoords = map.WorldToHexCoords(worldCoords);
+            Assert.AreEqual(targetHexCoords, newHexCoords);
         }
     }
 }

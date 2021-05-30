@@ -2,6 +2,6 @@
 {
     // Constructor
     public EditorMap() {
-        CreateMap<Hex>();
+        CreateMap();
     }
 }

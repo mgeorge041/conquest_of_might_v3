@@ -6,9 +6,20 @@ public class CardBuildingDisplay : CardPieceDisplay
 {
     private CardBuilding cardBuilding;
 
+    // Initialize
+    public void Initialize()
+    {
+        SetSharedInfo(cardBuilding);
+        Set2ndResource(cardBuilding);
+        SetCardLifebarOverlay(cardBuilding.lifebarOverlay);
+        cardMight.text = cardBuilding.might.ToString();
+        cardRange.text = cardBuilding.range.ToString();
+    }
+
     // Set card
     public void SetCard(CardBuilding cardBuilding) {
         this.cardBuilding = cardBuilding;
+        Initialize();
     }
 
     // Get card

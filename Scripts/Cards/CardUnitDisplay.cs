@@ -11,9 +11,21 @@ public class CardUnitDisplay : CardPieceDisplay
     // Unit stats
     public Text cardSpeed;
 
+    // Initialize
+    public void Initialize()
+    {
+        SetSharedInfo(cardUnit);
+        Set2ndResource(cardUnit);
+        SetCardLifebarOverlay(cardUnit.lifebarOverlay);
+        cardMight.text = cardUnit.might.ToString();
+        cardRange.text = cardUnit.range.ToString();
+        cardSpeed.text = cardUnit.speed.ToString();
+    }
+
     // Set card unit
     public void SetCard(CardUnit cardUnit) {
         this.cardUnit = cardUnit;
+        Initialize();
     }
 
     // Get card
@@ -29,12 +41,7 @@ public class CardUnitDisplay : CardPieceDisplay
     // Start is called before the first frame update
     void Start()
     {
-        SetSharedInfo(cardUnit);
-        Set2ndResource(cardUnit);
-        SetCardLifebarOverlay(cardUnit.lifebarOverlay);
-        cardMight.text = cardUnit.might.ToString();
-        cardRange.text = cardUnit.range.ToString();
-        cardSpeed.text = cardUnit.speed.ToString();
+        Initialize();
     }
 
     // Update is called once per frame

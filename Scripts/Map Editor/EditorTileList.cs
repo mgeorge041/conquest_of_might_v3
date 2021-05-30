@@ -12,8 +12,8 @@ public class EditorTileList : MonoBehaviour
     void Start()
     {
         // Load all tiles as editor tile objects
-        Sprite[] tileSprites = Resources.LoadAll<Sprite>("Art/Tiles/Game Map/");
-        TileData[] tileData = Resources.LoadAll<TileData>("Tiles/Tile Data/");
+        Sprite[] tileSprites = Resources.LoadAll<Sprite>(ENV.TILES_ART_RESOURCE_PATH);
+        TileData[] tileData = Resources.LoadAll<TileData>(ENV.TILE_DATA_RESOURCE_PATH);
         for (int i = 0; i < tileSprites.Length; i++)
         {
             EditorTile newEditorTile = Instantiate(editorTilePrefab, transform);

@@ -102,7 +102,7 @@ public class GamePieceObject : MonoBehaviour
 
     // Get unit prefab
     public static GamePieceObject GetUnitPrefab() {
-        GamePieceObject gamePieceObject = Resources.Load<GamePieceObject>("Prefabs/Unit");
+        GamePieceObject gamePieceObject = Resources.Load<GamePieceObject>(ENV.UNIT_PREFAB_RESOURCE_PATH);
         return gamePieceObject;
     }
 
@@ -110,13 +110,13 @@ public class GamePieceObject : MonoBehaviour
     public static GamePieceObject InitializeFromCardPiece(CardPiece cardPiece, Transform parentTransform, Player player) {
         if (cardPiece.cardType == CardType.Unit) {
             GamePieceObject newUnitObject = Instantiate(GetUnitPrefab(), parentTransform);
-            Unit newUnit = new Unit((CardUnit)cardPiece, player);
+            Unit newUnit = GamePiece.CreatePiece<Unit>(cardPiece, player);
             newUnitObject.SetPiece(newUnit);
             return newUnitObject;
         }
         else if (cardPiece.cardType == CardType.Building) {
             GamePieceObject newBuildingObject = Instantiate(GetUnitPrefab(), parentTransform);
-            Building newBuilding = new Building((CardBuilding)cardPiece, player);
+            Building newBuilding = GamePiece.CreatePiece<Building>(cardPiece, player);
             newBuildingObject.SetPiece(newBuilding);
             return newBuildingObject;
         }

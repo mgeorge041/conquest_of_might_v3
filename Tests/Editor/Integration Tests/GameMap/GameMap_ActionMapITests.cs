@@ -35,7 +35,6 @@ namespace Tests.ITests.MapTests
             unit2.player = player2;
             hexCoords = Vector3Int.zero;
             gameMap.AddPiece(unit1, hexCoords);
-
         }
 
         // End
@@ -48,40 +47,32 @@ namespace Tests.ITests.MapTests
                 C.Destroy(unit2.gameObject);
         }
 
-        // Test set selected piece as unit
+        // Test attack piece 
         [Test]
-        public void SetSelectedPieceAsUnit()
+        public void AttacksPiece()
         {
-            Building building1 = BuildingCardBuildingITests.CreateTestBuildingWithCard();
-            player1.SetSelectedPiece(unit1);
-            Assert.AreEqual(unit1, player1.selectedPiece);
+            Vector3Int targetHexCoords = new Vector3Int(1, -1, 0);
+            gameMap.AddPiece(unit2, targetHexCoords);
+            unit1.might = 3;
+            gameMap.AttackPiece(unit1, unit2);
+
+            // Confirm piece is attacked
+            Assert.AreEqual(2, unit2.currentHealth);
         }
 
-        // Test set selected piece as building
+        // Test kills piece
         [Test]
-        public void SetSelectedPieceAsBuilding()
+        public void AttacksAndKillsPiece()
         {
-            Building building1 = BuildingCardBuildingITests.CreateTestBuildingWithCard();
-            gameMap.AddPiece(building1, new Vector3Int(2, -2, 0));
-            player1.SetSelectedPiece(building1);
-            Assert.AreEqual(building1, player1.selectedPiece);
-        }
+            Vector3Int targetHexCoords = new Vector3Int(1, -1, 0);
+            gameMap.AddPiece(unit2, targetHexCoords);
 
-        // Test set selected piece as null
-        [Test]
-        public void SetSelectedPieceAsNull()
-        {
-            player1.SetSelectedPiece(null);
-            Assert.IsNull(player1.selectedPiece);
-        }
-
-        // Test set selected piece as null when setting same piece twice
-        [Test]
-        public void SetSelectedPieceNullWhenSetTwiceAsSamePiece()
-        {
-            player1.SetSelectedPiece(unit1);
-            player1.SetSelectedPiece(unit1);
-            Assert.IsNull(player1.selectedPiece);
+            // Confirm piece is attacked and dies
+            GameHex targetHex = gameMap.GetHexAtHexCoords(targetHexCoords);
+            gameMap.AttackPiece(unit1, unit2);
+            Assert.AreEqual(0, unit2.currentHealth);
+            Assert.IsNull(targetHex.piece);
+            Assert.IsTrue(unit2 == null);
         }
 
         // Test move piece
@@ -122,22 +113,6 @@ namespace Tests.ITests.MapTests
             Assert.AreEqual(3, unit1.remainingSpeed);
         }
 
-        // Test kills piece
-        [Test]
-        public void AttacksAndKillsPiece()
-        {
-            Vector3Int targetHexCoords = new Vector3Int(1, -1, 0);
-            gameMap.AddPiece(unit1, hexCoords);
-            gameMap.AddPiece(unit2, targetHexCoords);
-
-            // Confirm piece is attacked and dies
-            GameHex targetHex = gameMap.GetHexAtHexCoords(targetHexCoords);
-            gameMap.AttackPiece(unit1, unit2);
-            Assert.AreEqual(0, unit2.currentHealth);
-            Assert.IsNull(targetHex.piece);
-            Assert.IsTrue(unit2 == null);
-        }
-
         // Test creates movement tiles in 1 range
         [Test]
         public void CreatesMovementTilesFor1Speed()
@@ -146,6 +121,16 @@ namespace Tests.ITests.MapTests
 
             actionMap.CreateActionMap(unit1, gameMap);
             Assert.AreEqual(6, actionMap.movementTiles.Count);
+        }
+
+        // Test action map paints tiles
+        [Test]
+        public void ActionMapPaintsMovementTilesFor1Speed()
+        {
+            unit1.DecreaseSpeed(unit1.remainingSpeed - 1);
+            actionMap.CreateActionMap(unit1, gameMap);
+            Vector3Int targetHexCoords = new Vector3Int(1, -1, 0);
+            Assert.AreEqual(actionMap.movementTile, actionMap.tilemap.GetTile(Hex.HexToTileCoords(targetHexCoords)));
         }
 
         // Test creates movement tiles in 1 range with a piece on 1 hex
@@ -177,6 +162,27 @@ namespace Tests.ITests.MapTests
             actionMap.CreateActionMap(unit1, gameMap);
             Assert.AreEqual(1, actionMap.attackTiles.Count);
             Assert.AreEqual(6, actionMap.movementTiles.Count);
+        }
+
+        // Test hex is moveable
+        [Test]
+        public void HexIsMoveable()
+        {
+            unit1.DecreaseSpeed(4);
+            actionMap.CreateActionMap(unit1, gameMap);
+            Vector3Int targetTileCoords = Hex.HexToTileCoords(new Vector3Int(1, -1, 0));
+            Assert.IsTrue(actionMap.MoveableToTileAtTileCoords(targetTileCoords));
+        }
+
+        // Test hex is attackable
+        [Test]
+        public void HexIsAttackable()
+        {
+            Vector3Int targetHexCoords = new Vector3Int(2, -2, 0);
+            gameMap.AddPiece(unit2, targetHexCoords);
+            actionMap.CreateActionMap(unit1, gameMap);
+            Vector3Int targetTileCoords = Hex.HexToTileCoords(targetHexCoords);
+            Assert.IsTrue(actionMap.AttackableTileAtTileCoords(targetTileCoords));   
         }
     }
 }

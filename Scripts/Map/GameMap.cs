@@ -9,6 +9,7 @@ using UnityEngine.EventSystems;
 public class GameMap : Map
 {
     // Pieces
+    public new Dictionary<Vector3Int, GameHex> hexCoordsDict { get; private set; }
     private Dictionary<int, List<GamePiece>> pieces = new Dictionary<int, List<GamePiece>>();
 
     public Vector3Int[] neighborCoords =
@@ -31,46 +32,66 @@ public class GameMap : Map
     public new void Initialize()
     {
         InitializeVariables();
-        CreateMap<GameHex>();
+        CreateMap(hexCoordsDict);
         PaintMap();
+    }
+
+    // Initialize variables
+    protected void InitializeVariables() 
+    {
+        isOverTilemap = false;
+
+        // Tilemap sizing
+        newMapRadius = 5;
+        mapRadius = 5;
+
+        // Tilemap variables
+        hexCoordsDict = new Dictionary<Vector3Int, GameHex>();
+        tileHexCoordsDict = new Dictionary<Vector3Int, Vector3Int>();
+        removedTiles = new List<Vector3Int>();
+        highlightTileCoords = new List<Vector3Int>();
     }
 
     // Constructor with map size
     public GameMap(int mapRadius) {
         this.mapRadius = mapRadius;
         newMapRadius = mapRadius;
-        CreateMap<GameHex>();
-    }
-
-    // Create map
-    public void CreateMap()
-    {
-        CreateMap<GameHex>();
+        CreateMap();
     }
 
     // Updates the map to a new size
     public new void UpdateMapToRadius(int newRadius)
     {
         newMapRadius = newRadius;
-        CreateMap();
+        CreateMap(hexCoordsDict);
         DrawMap();
     }
 
     // Get hex from hex coords
-    public new GameHex GetHexAtHexCoords(Vector3Int hexCoords) {
-        return (GameHex)base.GetHexAtHexCoords(hexCoords);
+    public new GameHex GetHexAtHexCoords(Vector3Int hexCoords)
+    {
+        if (hexCoordsDict.ContainsKey(hexCoords))
+        {
+            return hexCoordsDict[hexCoords];
+        }
+        return null;
     }
 
     // Get hex from tile coords
-    public new GameHex GetHexAtTileCoords(Vector3Int tileCoords) {
-        return (GameHex)base.GetHexAtTileCoords(tileCoords);
+    public new GameHex GetHexAtTileCoords(Vector3Int tileCoords)
+    {
+        if (tileHexCoordsDict.ContainsKey(tileCoords))
+        {
+            return hexCoordsDict[tileHexCoordsDict[tileCoords]];
+        }
+        return null;
     }
 
     // Get hexes in unit range
     public List<GameHex> GetHexesInUnitRange(Unit unit)
     {
         int totalRange = unit.remainingSpeed + unit.range;
-        return GetHexesInRange<GameHex>(unit.gameHex.hexCoords, totalRange);
+        return GetHexesInRange(hexCoordsDict, unit.gameHex.hexCoords, totalRange);
     }
 
     // Get hexes in range
@@ -86,7 +107,8 @@ public class GameMap : Map
         {
             totalRange = piece.range;
         }
-        return GetHexesInRange<GameHex>(piece.gameHex.hexCoords, totalRange);
+        Debug.Log("Total piece range: " + totalRange);
+        return GetHexesInRange(hexCoordsDict, piece.gameHex.hexCoords, totalRange);
     }
 
     // Add a game piece to the map
@@ -97,6 +119,7 @@ public class GameMap : Map
             // Associate hex with piece
             gameHex.piece = piece;
             piece.gameHex = gameHex;
+            piece.SetPosition(this);
 
             // Update lists
             //piece.player.PlayPiece(piece);
@@ -123,6 +146,7 @@ public class GameMap : Map
             unit.gameHex = targetHex;
             targetHex.piece = unit;
             currentHex.piece = null;
+            unit.SetPosition(this);
             unit.player.SetSelectedPiece(null);
         }
     }
@@ -165,9 +189,26 @@ public class GameMap : Map
         return GetHexAtHexCoords(hexCoords).HasPiece();
     }
 
-    // Get hex piece
-    public GamePiece GetHexPiece(Vector3Int hexCoords) {
+    // Get hex piece from hex coords
+    public GamePiece GetHexPieceFromHexCoords(Vector3Int hexCoords) {
         return GetHexAtHexCoords(hexCoords).piece;
+    }
+
+    // Get hex from world position
+    public new GameHex GetWorldPositionHex(Vector3 worldPosition)
+    {
+        Vector3Int tileCoords = WorldToTileCoords(worldPosition);
+        return GetHexAtTileCoords(tileCoords);
+    }
+
+    // Get hex piece from world position
+    public GamePiece GetHexPieceFromWorldPosition(Vector3 worldPosition)
+    {
+        GameHex gameHex = GetWorldPositionHex(worldPosition);
+        if (gameHex != null) { 
+            return gameHex.piece;
+        }
+        return null;
     }
 
     // Determine if can play on hex
