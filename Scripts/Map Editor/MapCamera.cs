@@ -196,6 +196,9 @@ public class MapCamera : MonoBehaviour
     // Get size of map grid
     public void UpdateCameraBounds()
     {
+        if (!tilemap)
+            return;
+
         Vector4 newCameraBounds = CalculateCameraBounds();
         SetCameraBounds(newCameraBounds);
         MoveCameraToPosition(transform.position);

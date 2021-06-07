@@ -44,5 +44,31 @@ namespace Tests.ITests.PlayerTests
             player.DrawCard(newCardPiece);
             Assert.AreEqual(0, player.playerUI.GetResourceCount(ResourceType.Food));
         }
+
+        // Test drawn resource card does not go to hand
+        [Test]
+        public void DrawnResourceCardDoesNotGoToHand()
+        {
+            player.DrawCard(foodResourceCard);
+            Assert.AreEqual(0, player.hand.cards.Count);
+        }
+
+        // Test drawn piece card goes to hand
+        [Test]
+        public void DrawnPieceCardGoesToHand()
+        {
+            CardPiece newCardPiece = CardUnitUTests.CreateTestCardUnit();
+            player.DrawCard(newCardPiece);
+            Assert.AreEqual(1, player.cardPieceDisplays.Count);
+        }
+
+        // Test drawn piece card creates card display object
+        [Test]
+        public void DrawnPieceCardCreatesCardDisplayObject()
+        {
+            CardPiece newCardPiece = CardUnitUTests.CreateTestCardUnit();
+            player.DrawCard(newCardPiece);
+            Assert.AreEqual(1, player.handTransform.childCount);
+        }
     }
 }

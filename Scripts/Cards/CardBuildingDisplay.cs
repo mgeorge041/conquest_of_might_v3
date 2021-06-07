@@ -17,9 +17,14 @@ public class CardBuildingDisplay : CardPieceDisplay
     }
 
     // Set card
-    public void SetCard(CardBuilding cardBuilding) {
-        this.cardBuilding = cardBuilding;
-        Initialize();
+    public override void SetCard(Card card)
+    {
+        if (card is CardBuilding)
+        {
+            CardBuilding cardBuilding = (CardBuilding)card;
+            this.cardBuilding = cardBuilding;
+            Initialize();
+        }
     }
 
     // Get card

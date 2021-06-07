@@ -13,9 +13,6 @@ public class CardPiece : Card
     public ResourceType res2;
     public int res2Cost;
 
-    // Playable
-    public bool isPlayable { get; set; }
-
     // Get resource costs
     public Dictionary<ResourceType, int> GetResourceCosts() {
         Dictionary<ResourceType, int> resourceCosts = new Dictionary<ResourceType, int>();

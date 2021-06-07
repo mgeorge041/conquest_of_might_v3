@@ -3,14 +3,20 @@ public static class ENV
     // Cards
     public const string CARDS_RESOURCE_PATH = "Cards/Tests/";
     public const string CARDS_FULL_PATH = "Assets/Resources/Cards/Tests/";
+    public const string CASTLE_CARD_RESOURCE_PATH = "Cards/Building/Castle";
+    public const string CASTLE_CARD_FULL_PATH = "Assets/Resources/Cards/Building/Castle.asset";
+
+    // Card tests
     public const string CARD_UNIT_TEST_RESOURCE_PATH = "Cards/Tests/Test Unit";
     public const string CARD_UNIT_TEST_FULL_PATH = "Assets/Resources/Cards/Tests/Test Unit.asset";
     public const string CARD_BUILDING_TEST_RESOURCE_PATH = "Cards/Tests/Test Building";
     public const string CARD_BUILDING_TEST_FULL_PATH = "Assets/Resources/Cards/Tests/Test Builiding.asset";
     public const string CARD_RESOURCE_TEST_RESOURCE_PATH = "Cards/Tests/Test Resource";
     public const string CARD_RESOURCE_TEST_FULL_PATH = "Assets/Resources/Cards/Tests/Test Resource.asset";
-    public const string CASTLE_CARD_RESOURCE_PATH = "Cards/Building/Castle";
-    public const string CASTLE_CARD_FULL_PATH = "Assets/Resources/Cards/Building/Castle.asset";
+    public const string CARD_HIGHLIGHTED_BORDER_RESOURCE_PATH = "Art/UI/Highlighted Card Border";
+    public const string CARD_HIGHLIGHTED_BORDER_FULL_PATH = "Assets/Resources/Art/UI/Highlighted Card Border.png";
+    public const string CARD_UNPLAYABLE_BORDER_RESOURCE_PATH = "Art/UI/Unplayable Card Border";
+    public const string CARD_UNPLAYABLE_BORDER_FULL_PATH = "Assets/Resources/Art/UI/Unplayable Card Border.png";
 
     // Game pieces
     public const string UNIT_PREFAB_RESOURCE_PATH = "Prefabs/Unit.prefab";

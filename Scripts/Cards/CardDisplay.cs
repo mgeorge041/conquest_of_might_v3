@@ -7,7 +7,7 @@ using UnityEngine.UI;
 public abstract class CardDisplay : MonoBehaviour
 {
     // Hand
-    protected PlayerObject playerObject;
+    public Player player { get; set; }
 
     // Card data
     public Card card;
@@ -40,51 +40,43 @@ public abstract class CardDisplay : MonoBehaviour
 
     // Get and set card
     public abstract Card GetCard();
+    public abstract void SetCard(Card card);
 
-    // Get card unit display prefab
-    private static CardUnitDisplay GetCardUnitDisplayPrefab() {
-        CardUnitDisplay cardUnitDisplayPrefab = Resources.Load<CardUnitDisplay>(ENV.CARD_UNIT_DISPLAY_PREFAB_RESOURCE_PATH);
-        return cardUnitDisplayPrefab;
-    }
-
-    // Get card building display prefab
-    private static CardBuildingDisplay GetCardBuildingDisplayPrefab() {
-        CardBuildingDisplay cardBuildingDisplayPrefab = Resources.Load<CardBuildingDisplay>(ENV.CARD_BUILDING_DISPLAY_PREFAB_RESOURCE_PATH);
-        return cardBuildingDisplayPrefab;
-    }
-
-    // Get card resource display prefab
-    private static CardResourceDisplay GetCardResourceDisplayPrefab() {
-        CardResourceDisplay cardResourceDisplayPrefab = Resources.Load<CardResourceDisplay>(ENV.CARD_RESOURCE_DISPLAY_PREFAB_RESOURCE_PATH);
-        return cardResourceDisplayPrefab;
+    // Get piece prefab
+    public static CardDisplay GetCardDisplayPrefab(Card card)
+    {
+        if (card.cardType == CardType.Unit)
+        {
+            CardUnitDisplay newUnit = Resources.Load<CardUnitDisplay>(ENV.CARD_UNIT_DISPLAY_PREFAB_RESOURCE_PATH);
+            return newUnit;
+        }
+        else if (card.cardType == CardType.Building)
+        {
+            CardBuildingDisplay newBuilding = Resources.Load<CardBuildingDisplay>(ENV.CARD_BUILDING_DISPLAY_PREFAB_RESOURCE_PATH);
+            return newBuilding;
+        }
+        else if (card.cardType == CardType.Resource)
+        {
+            CardResourceDisplay newResource = Resources.Load<CardResourceDisplay>(ENV.CARD_RESOURCE_DISPLAY_PREFAB_RESOURCE_PATH);
+            return newResource;
+        }
+        return null;
     }
 
     // Initialize into the parent transform
-    public static CardDisplay Initialize(Card card, Transform parentTransform) {
-        if (card.cardType == CardType.Unit) {
-            CardUnitDisplay cardUnitDisplay = Instantiate(GetCardUnitDisplayPrefab(), parentTransform);
-            cardUnitDisplay.SetCard((CardUnit)card);
-            return cardUnitDisplay;
-        }
-        else if (card.cardType == CardType.Building) {
-            CardBuildingDisplay cardBuildingDisplay = Instantiate(GetCardBuildingDisplayPrefab(), parentTransform);
-            cardBuildingDisplay.SetCard((CardBuilding)card);
-            return cardBuildingDisplay;
-        }
-        else if (card.cardType == CardType.Resource) {
-            CardResourceDisplay cardResourceDisplay = Instantiate(GetCardResourceDisplayPrefab(), parentTransform);
-            cardResourceDisplay.SetCard((CardResource)card);
-            return cardResourceDisplay;
-        }
-        else {
-            return null;
-        }
-        /*
-        else if (cardType == CardType.Spell)
-        {
-            Debug.Log("i");
-        }
-        */
+    public static CardDisplay CreateCardDisplay(Card card)
+    {
+        CardDisplay newCardDisplay = Instantiate(GetCardDisplayPrefab(card));
+        newCardDisplay.SetCard(card);
+        return newCardDisplay;
+    }
+
+    // Initialize into the parent transform
+    public static CardDisplay CreateCardDisplay(Card card, Transform parentTransform)
+    {
+        CardDisplay newCardDisplay = Instantiate(GetCardDisplayPrefab(card), parentTransform);
+        newCardDisplay.SetCard(card);
+        return newCardDisplay;
     }
 
     // Set is drawn

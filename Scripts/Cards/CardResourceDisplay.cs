@@ -7,9 +7,14 @@ public class CardResourceDisplay : CardDisplay
     // Card info
     private CardResource cardResource;
 
-    // Set card resource
-    public void SetCard(CardResource cardResource) {
-        this.cardResource = cardResource;
+    // Set card
+    public override void SetCard(Card card)
+    {
+        if (card is CardResource)
+        {
+            CardResource cardResource = (CardResource)card;
+            this.cardResource = cardResource;
+        }
     }
 
     // Get card

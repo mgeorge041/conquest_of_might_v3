@@ -3,82 +3,118 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public class Hand
+public class Hand : MonoBehaviour
 {
-    // Cards
-    public List<CardPiece> cards { get; } = new List<CardPiece>();
+    // Card displays
+    public List<CardPieceDisplay> cards = new List<CardPieceDisplay>();
 
-    // Player
-    private Player player;
+    // Player object
+    public Player player;
 
-    // Constructor
-    public Hand() { }
+    // Hand
+    public Transform cardRegion;
 
-    // Constructor
-    public Hand(Player player) {
-        this.player = player;
+    // Display variables
+    float height;
+    private bool collapsing = false;
+
+    // Add card display
+    public void AddDrawnCard(CardPieceDisplay cardPieceDisplay)
+    {
+        int newCardIndex = (cardRegion.childCount + 1) / 2;
+        cardPieceDisplay.transform.SetParent(cardRegion);
+        cardPieceDisplay.transform.SetSiblingIndex(newCardIndex);
+        cards.Add(cardPieceDisplay);
+        ShowPlayableCard(cardPieceDisplay);
     }
 
-    // Add a card to the hand
-    public void AddCard(Card card) {
-        if (card != null) {
+    // Add card display
+    public void AddCard(Card card)
+    {
+        if (card.cardType != CardType.Resource)
+        {
+            CardPieceDisplay newCardDisplay = (CardPieceDisplay)CardDisplay.CreateCardDisplay(card, cardRegion);
+            newCardDisplay.player = player;
+            cards.Add(newCardDisplay);
+            ShowPlayableCard(newCardDisplay);
+        }
+    }
 
-            // Increment resource
-            if (card.cardType == CardType.Resource) {
-                player.IncrementResource(card.res1, card.res1Cost);
-                player.playerUI.UpdateAllResources(player.resources);
-                SetPlayableCards();
+    // Add card displays
+    public void AddCards(List<CardPiece> cards)
+    {
+        for (int i = 0; i < cards.Count; i++)
+        {
+            AddCard(cards[i]);
+        }
+    }
+
+    // Show whether card is playable
+    private void ShowPlayableCard(CardPieceDisplay cardDisplay)
+    {
+        if (!cardDisplay.isPlayable)
+        {
+            cardDisplay.isPlayable = false;
+        }
+    }
+
+    // Show which cards are playable
+    public void ShowPlayableCards()
+    {
+        for (int i = 0; i < cards.Count; i++)
+        {
+            if (!cards[i].isPlayable)
+            {
+                cards[i].isPlayable = false;
             }
-
-            // Add playable card
-            else {
-                cards.Add((CardPiece)card);
-                SetPlayable((CardPiece)card);
+            else
+            {
+                cards[i].isPlayable = false;
             }
         }
-    }
-
-    // Play a card
-    public void PlayCard(CardPiece selectedCard) {
-        if (selectedCard == null) {
-            return;
-        }
-        cards.Remove(selectedCard);
-        SetPlayableCards();
-    }
-
-    // Set whether card is playable
-    private void SetPlayable(CardPiece cardPiece) {
-        cardPiece.isPlayable = CardIsPlayable(cardPiece);
-    }
-
-    // Set whether card is playable
-    public void SetPlayableCards() {
-        for (int i = 0; i < cards.Count; i++) {
-            cards[i].isPlayable = CardIsPlayable(cards[i]);
-        }
-    }
-
-    // Get whether card is playable
-    public bool CardIsPlayable(CardPiece cardPiece) {
-        Dictionary<ResourceType, int> resourceCosts = cardPiece.GetResourceCosts();
-        foreach (KeyValuePair<ResourceType, int> pair in resourceCosts) {
-            if (player.GetResourceCount(pair.Key) < pair.Value) {
-                return false;
-            }
-        }
-        return true;
     }
 
     // Collapse hand
-    public static void CollapseHand(Transform transform, float height) {
+    public static void CollapseHand(Transform transform, float height)
+    {
         //transform.position = Vector3.Lerp(transform.position, new Vector3(transform.position.x, -height + 10), 5 * Time.fixedDeltaTime);
         transform.position = new Vector3(transform.position.x, -height + 10);
     }
 
     // Expand hand
-    public static void ExpandHand(Transform transform, float height) {
+    public static void ExpandHand(Transform transform, float height)
+    {
         //transform.position = Vector3.Lerp(transform.position, new Vector3(transform.position.x, 0), 5 * Time.fixedDeltaTime);
         transform.position = new Vector3(transform.position.x, 0);
+    }
+
+    // Show or hide hand
+    public void ToggleHand()
+    {
+        collapsing = !collapsing;
+        if (collapsing)
+        {
+            CollapseHand(transform, height);
+        }
+        else
+        {
+            ExpandHand(transform, height);
+        }
+    }
+
+    // Start is called before the first frame update
+    void Start()
+    {
+        height = transform.GetComponent<RectTransform>().rect.height;
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        // Collapse hand
+        if (Input.GetKeyDown(KeyCode.C))
+        {
+            ToggleHand();
+        }
     }
 }

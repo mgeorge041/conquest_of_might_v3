@@ -14,14 +14,14 @@ namespace Tests.UTests.PlayerTests
 
         // Create hand 
         public static Hand CreateTestHand() {
-            Hand hand = new Hand();
+            Hand hand = TestFunctions.CreateClassObject<Hand>("Assets/Resources/Prefabs/Hand.prefab");
             return hand;
         }
 
         // Create hand
         public static Hand CreateTestHand(Player player)
         {
-            Hand hand = new Hand(player);
+            Hand hand = TestFunctions.CreateClassObject<Hand>("Assets/Resources/Prefabs/Hand.prefab");
             return hand;
         }
 

@@ -89,14 +89,14 @@ public class PlayerObject : MonoBehaviour
 
         // Resource card
         if (drawnCard.cardType == CardType.Resource) {
-            CardResourceDisplay newCardDisplay = (CardResourceDisplay)CardDisplay.Initialize(drawnCard, drawnCardRegion);
+            CardResourceDisplay newCardDisplay = (CardResourceDisplay)CardDisplay.CreateCardDisplay(drawnCard, drawnCardRegion);
             StartCoroutine(ShowDrawnCard(newCardDisplay));
         }
 
         // Playable card
         else {
-            CardPieceDisplay newCardDisplay = (CardPieceDisplay)CardDisplay.Initialize(drawnCard, drawnCardRegion);
-            newCardDisplay.SetPlayerObject(this);
+            CardPieceDisplay newCardDisplay = (CardPieceDisplay)CardDisplay.CreateCardDisplay(drawnCard, drawnCardRegion);
+            newCardDisplay.player = player;
             StartCoroutine(ShowDrawnCard(newCardDisplay));
         }
         
@@ -136,8 +136,8 @@ public class PlayerObject : MonoBehaviour
 
     // Instantiate starting cards
     public void InstantiateStartingCards() {
-        List<CardPiece> cards = player.hand.cards;
-        handObject.AddCards(cards);
+        List<CardPieceDisplay> cards = player.cardPieceDisplays;
+        //handObject.AddCards(cards);
     }
 
     // Instantiate player pieces
@@ -237,7 +237,7 @@ public class PlayerObject : MonoBehaviour
 
     // Play selected card at location
     public void PlaySelectedCardAtTile(Vector3Int tileCoords) {
-        CardPiece selectedCard = player.selectedCard;
+        CardPiece selectedCard = player.selectedCard.GetCardPiece();
         GamePiece newPiece = GamePiece.CreatePiece<GamePiece>(selectedCard, player);
         gameMap.AddPiece(newPiece, tileCoords);
         CreateAndPositionPieceObject(newPiece);
@@ -262,7 +262,7 @@ public class PlayerObject : MonoBehaviour
         // Get card piece
         if (newSelectedCard != null) {
             CardPiece cardPiece = newSelectedCard.GetCardPiece();
-            player.SetSelectedCard(cardPiece);
+            player.SetSelectedCard(newSelectedCard);
         }
         else {
             player.SetSelectedCard(null);

@@ -27,11 +27,11 @@ public class CardSelectionPanel : MonoBehaviour
 
             // Create a new card
             Destroy(currentCardDisplay.gameObject);
-            currentCardDisplay = CardDisplay.Initialize(card, cardDisplayPanel);
+            currentCardDisplay = CardDisplay.CreateCardDisplay(card, cardDisplayPanel);
         }
         catch {
             // Create a new card
-            currentCardDisplay = CardDisplay.Initialize(card, cardDisplayPanel);
+            currentCardDisplay = CardDisplay.CreateCardDisplay(card, cardDisplayPanel);
         }
     }
 

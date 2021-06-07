@@ -8,16 +8,18 @@ using UnityEngine.EventSystems;
 public class Player : MonoBehaviour
 {
     // Cards
-    public Hand hand { get; set; }
+    public List<CardPieceDisplay> cardPieceDisplays;
+    public Hand hand;
+    public Transform handTransform;
     public Deck deck { get; private set; }
     public bool hasSelectedCard { get; private set; } = false;
-    public CardPiece selectedCard { get; private set; }
+    public CardPieceDisplay selectedCard { get; private set; }
     public PlayerGameData gameData { get; private set; }
 
     // Player variables
     public int playerId { get; private set; }
     public Vector3Int startTileCoords { get; private set; }
-    public bool isTurn;
+    public bool isTurn = true;
 
     // Maps
     public GameMap gameMap;
@@ -27,6 +29,7 @@ public class Player : MonoBehaviour
 
     // UI
     public PlayerUI playerUI;
+    public Transform drawnCardRegion;
 
     // Game manager
     public PlayerObject playerObject;
@@ -87,7 +90,7 @@ public class Player : MonoBehaviour
     {
         gameData = new PlayerGameData();
         pieces = new List<GamePiece>();
-        CreateHandAndDeck();
+        CreateDeck();
         CreateResourceCounts();
         //fogMap = new FogMap();
     }
@@ -101,10 +104,10 @@ public class Player : MonoBehaviour
         Initialize();
     }
 
-    // Initialize hand and deck
-    private void CreateHandAndDeck() {
-        hand = new Hand(this);
+    // Initialize deck
+    private void CreateDeck() {
         deck = new Deck();
+        cardPieceDisplays = new List<CardPieceDisplay>();
     }
 
     // Create empty resource counts
@@ -166,6 +169,7 @@ public class Player : MonoBehaviour
     public void SetResource(ResourceType resourceType, int amount) {
         if (resourceType != ResourceType.None) {
             resources[resourceType] = amount;
+            SetPlayableCards();
         }
     }
 
@@ -203,30 +207,30 @@ public class Player : MonoBehaviour
     public Card DrawTopCard() {
         Card drawnCard = deck.DrawCard();
         gameData.AddDrawnCard(drawnCard);
-        hand.AddCard(drawnCard);
+        AddCard(drawnCard);
+        SetPlayableCards();
         return drawnCard;
     }
 
     // Draw specific card
     public void DrawCard(Card drawnCard) {
         gameData.AddDrawnCard(drawnCard);
-        hand.AddCard(drawnCard);
+        AddCard(drawnCard);
+        SetPlayableCards();
     }
 
     // Set selected card
-    public void SetSelectedCard(CardPiece newSelectedCard) {
+    public void SetSelectedCard(CardPieceDisplay newSelectedCard) {
 
         // Set new selected card
         if (newSelectedCard != null) {
             selectedCard = newSelectedCard;
             hasSelectedCard = true;
             selectedPiece = null;
-            actionMap.CreatePlayableMap(startTileCoords, gameMap);
         }
         else {
             selectedCard = null;
             hasSelectedCard = false;
-            actionMap.ClearActionTiles();
         }
     }
 
@@ -278,6 +282,100 @@ public class Player : MonoBehaviour
         return false;
     }
 
+    // Show current player's turn
+    public IEnumerator ShowDrawnCard(CardDisplay cardDisplay)
+    {
+        Card card = cardDisplay.GetCard();
+        cardDisplay.SetIsDrawn();
+        yield return new WaitForSeconds(2);
+
+        // Increment resource
+        if (card.cardType == CardType.Resource)
+        {
+            C.Destroy(cardDisplay.gameObject);
+        }
+
+        // Add card piece display
+        else
+        {
+            int newCardIndex = (handTransform.childCount + 1) / 2;
+            cardDisplay.transform.SetParent(handTransform);
+            cardDisplay.transform.SetSiblingIndex(newCardIndex);
+        }
+
+
+        // Remove new turn display and enable end turn button
+        //currentTurnText.transform.parent.gameObject.SetActive(false);
+        //endTurnButton.interactable = true;
+    }
+
+    // Add a card to the hand
+    public void AddCard(Card card)
+    {
+        if (card != null)
+        {
+            CardDisplay newCardDisplay = CardDisplay.CreateCardDisplay(card, drawnCardRegion);
+            StartCoroutine(ShowDrawnCard(newCardDisplay));
+
+            // Increment resource
+            if (card.cardType == CardType.Resource)
+            {
+                IncrementResource(card.res1, card.res1Cost);
+                playerUI.UpdateAllResources(resources);
+                SetPlayableCards();
+            }
+
+            // Add card piece display
+            else
+            {
+                cardPieceDisplays.Add((CardPieceDisplay)newCardDisplay);
+                newCardDisplay.player = this;
+                SetPlayable((CardPieceDisplay)newCardDisplay);
+            }
+        }
+    }
+
+    // Play a card
+    public void PlayCard(CardPieceDisplay selectedCard)
+    {
+        if (selectedCard == null)
+        {
+            return;
+        }
+        cardPieceDisplays.Remove(selectedCard);
+        SetPlayableCards();
+    }
+
+    // Set whether card is playable
+    private void SetPlayable(CardPieceDisplay cardPieceDisplay)
+    {
+        cardPieceDisplay.isPlayable = CardIsPlayable(cardPieceDisplay.GetCardPiece());
+    }
+
+    // Set whether card is playable
+    public void SetPlayableCards()
+    {
+        for (int i = 0; i < cardPieceDisplays.Count; i++)
+        {
+            bool isPlayable = CardIsPlayable(cardPieceDisplays[i].GetCardPiece());
+            cardPieceDisplays[i].isPlayable = isPlayable;
+        }
+    }
+
+    // Get whether card is playable
+    public bool CardIsPlayable(CardPiece cardPiece)
+    {
+        Dictionary<ResourceType, int> resourceCosts = cardPiece.GetResourceCosts();
+        foreach (KeyValuePair<ResourceType, int> pair in resourceCosts)
+        {
+            if (GetResourceCount(pair.Key) < pair.Value)
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
     // Play a piece to the game map
     public void PlayPiece(GamePiece playedPiece) {
         pieces.Add(playedPiece);
@@ -285,7 +383,7 @@ public class Player : MonoBehaviour
         gameData.AddPlayedCard(playedPiece.GetCard());
 
         // Update hand
-        hand.PlayCard(selectedCard);
+        //hand.PlayCard(selectedCard);
         SetSelectedCard(null);
 
         // Clear playble map
@@ -309,9 +407,37 @@ public class Player : MonoBehaviour
         }
     }
 
+    // Player clicks on card in hand
+    public void PlayerClickOnCardInHand(CardPieceDisplay cardPieceDisplay)
+    {
+        if (!cardPieceDisplay.isPlayable || !isTurn)
+        {
+            return;
+        }
+
+        // Dehighlight old card
+        if (selectedCard)
+        {
+            selectedCard.SetHighlighted(false);
+        }
+
+        if (selectedCard == cardPieceDisplay)
+        {
+            SetSelectedCard(null);
+        }
+        else
+        {
+            SetSelectedCard(cardPieceDisplay);
+            cardPieceDisplay.SetHighlighted(true);
+        }
+    }
+
     // Player left clicks
     public void PlayerLeftClicksAtWorldPosition(Vector3 worldPosition)
     {
+        if (!gameMap)
+            return;
+
         // Get piece from click
         GamePiece piece = gameMap.GetHexPieceFromWorldPosition(worldPosition);
 

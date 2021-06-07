@@ -54,7 +54,7 @@ namespace Tests
         public void InitializesCard() {
             Card card = LoadTestUnitCard();
             Transform transform = new GameObject().transform;
-            CardDisplay cardDisplay = CardDisplay.Initialize(card, transform);
+            CardDisplay cardDisplay = CardDisplay.CreateCardDisplay(card, transform);
             Assert.IsNotNull(cardDisplay);
             Assert.AreEqual(cardDisplay.GetCard().cardName, "Wizard");
         }

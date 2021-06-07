@@ -8,7 +8,7 @@ public class HandObject : MonoBehaviour
     public List<CardPieceDisplay> cards = new List<CardPieceDisplay>();
 
     // Player object
-    public PlayerObject playerObject;
+    public Player player;
 
     // Hand
     public Transform cardRegion;
@@ -29,8 +29,8 @@ public class HandObject : MonoBehaviour
     // Add card display
     public void AddCard(Card card) {
         if (card.cardType != CardType.Resource) {
-            CardPieceDisplay newCardDisplay = (CardPieceDisplay)CardDisplay.Initialize(card, cardRegion);
-            newCardDisplay.SetPlayerObject(playerObject);
+            CardPieceDisplay newCardDisplay = (CardPieceDisplay)CardDisplay.CreateCardDisplay(card, cardRegion);
+            newCardDisplay.player = player;
             cards.Add(newCardDisplay);
             ShowPlayableCard(newCardDisplay);
         }
@@ -45,33 +45,45 @@ public class HandObject : MonoBehaviour
 
     // Show whether card is playable
     private void ShowPlayableCard(CardPieceDisplay cardDisplay) {
-        CardPiece cardPiece = cardDisplay.GetCardPiece();
-        if (!cardPiece.isPlayable) {
-            cardDisplay.SetUnplayableBorder();
+        if (!cardDisplay.isPlayable) {
+            cardDisplay.isPlayable = false;
         }
     }
 
     // Show which cards are playable
     public void ShowPlayableCards() {
         for (int i = 0; i < cards.Count; i++) {
-            CardPiece cardPiece = cards[i].GetCardPiece();
-            if (!cardPiece.isPlayable) {
-                cards[i].SetUnplayableBorder();
+            if (!cards[i].isPlayable) {
+                cards[i].isPlayable = false;
             }
             else {
-                cards[i].SetPlayableBorder();
+                cards[i].isPlayable = true;
             }
         }
+    }
+
+    // Collapse hand
+    public static void CollapseHand(Transform transform, float height)
+    {
+        //transform.position = Vector3.Lerp(transform.position, new Vector3(transform.position.x, -height + 10), 5 * Time.fixedDeltaTime);
+        transform.position = new Vector3(transform.position.x, -height + 10);
+    }
+
+    // Expand hand
+    public static void ExpandHand(Transform transform, float height)
+    {
+        //transform.position = Vector3.Lerp(transform.position, new Vector3(transform.position.x, 0), 5 * Time.fixedDeltaTime);
+        transform.position = new Vector3(transform.position.x, 0);
     }
 
     // Show or hide hand
     public void ToggleHand() {
         collapsing = !collapsing;
         if (collapsing) {
-            Hand.CollapseHand(transform, height);
+            CollapseHand(transform, height);
         }
         else {
-            Hand.ExpandHand(transform, height);
+            ExpandHand(transform, height);
         }
     }
 

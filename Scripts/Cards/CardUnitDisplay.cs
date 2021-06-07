@@ -22,10 +22,15 @@ public class CardUnitDisplay : CardPieceDisplay
         cardSpeed.text = cardUnit.speed.ToString();
     }
 
-    // Set card unit
-    public void SetCard(CardUnit cardUnit) {
-        this.cardUnit = cardUnit;
-        Initialize();
+    // Set card
+    public override void SetCard(Card card)
+    {
+        if (card is CardUnit)
+        {
+            CardUnit cardUnit = (CardUnit)card;
+            this.cardUnit = cardUnit;
+            Initialize();
+        }
     }
 
     // Get card

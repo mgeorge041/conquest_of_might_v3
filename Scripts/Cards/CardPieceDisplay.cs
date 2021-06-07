@@ -24,44 +24,48 @@ public abstract class CardPieceDisplay : CardDisplay, IPointerClickHandler
     public Image deathbar;
     public Image lifebarOverlay;
 
-    private bool isPlayable = true;
-    private bool isHighlighted = false;
+    private bool _isPlayable;
+    public bool isPlayable
+    {
+        get { return _isPlayable; }
+        set { 
+            if (value)
+            {
+                cardBorder.sprite = defaultBorder;
+            }
+            else
+            {
+                cardBorder.sprite = unplayableBorder;
+            }
+            _isPlayable = value;
+        }
+    }
 
     // Get card
     public abstract CardPiece GetCardPiece();
 
-    // Set player
-    public void SetPlayerObject(PlayerObject playerObject) {
-        this.playerObject = playerObject;
-    }
-
-    // Set playable card border status
-    public void SetPlayableBorder() {
-        cardBorder.sprite = defaultBorder;
-        isPlayable = true;
-    }
-
-    // Set unplayable card border status
-    public void SetUnplayableBorder() {
-        cardBorder.sprite = unplayableBorder;
-        isPlayable = false;
-    }
-
-    // Set card highlighted border
-    public void SetHighlighted(bool highlighted) {
-        isHighlighted = highlighted;
-        if (highlighted) {
+    // Set or unset highlighted border
+    public void SetHighlighted(bool highlighted)
+    {
+        if (highlighted && isPlayable)
+        {
             cardBorder.sprite = highlightedBorder;
-            
         }
-        else {
+        else if (!isPlayable)
+        {
+            cardBorder.sprite = unplayableBorder;
+        }
+        else
+        {
             cardBorder.sprite = defaultBorder;
         }
     }
 
     // Get whether border is highlighted
     public bool IsHighlighted() {
-        return isHighlighted;
+        if (cardBorder.sprite == highlightedBorder)
+            return true;
+        return false;
     }
 
     // Set the width of the lifebar or deathbar
@@ -82,18 +86,7 @@ public abstract class CardPieceDisplay : CardDisplay, IPointerClickHandler
 
     // Set highlighted status on click
     public void OnPointerClick(PointerEventData pointerEventData) {
-        if (GetCardPiece().isPlayable && playerObject.IsTurn()) {
-
-            // Deselect if already highlighted
-            if (!isHighlighted) {
-                SetHighlighted(true);
-                playerObject.SetSelectedCard(this);
-            }
-            else {
-                SetHighlighted(false);
-                playerObject.SetSelectedCard(null);
-            }
-        }
+        player.PlayerClickOnCardInHand(this);
     }
 
     // Show 2nd resource costs
